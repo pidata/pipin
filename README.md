@@ -14,3 +14,11 @@
 
 6. TODO: 提供操作界面。
 
+
+环境依赖：
+
+运行pipin-core 需要mongodb
+
+运行pipin-scheduler 需要zookeeper
+
+可以根据需要自行选择
