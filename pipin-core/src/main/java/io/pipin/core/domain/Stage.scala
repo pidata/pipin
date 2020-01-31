@@ -5,7 +5,8 @@ import java.util
 import akka.stream.Materializer
 import akka.{Done, NotUsed}
 import akka.stream.alpakka.mongodb.scaladsl.MongoSource
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Keep, Sink, Source, SourceQueueWithComplete}
+import com.mongodb.client.model.FindOneAndUpdateOptions
 import org.slf4j.Logger
 import io.pipin.core.exception.StageException
 
@@ -15,6 +16,7 @@ import com.mongodb.reactivestreams.client.{FindPublisher, MongoCollection}
 import org.bson.Document
 import io.pipin.core.ext._
 import io.pipin.core.Converters._
+import io.pipin.core.util.Hashing
 
 import scala.collection.JavaConverters._
 
@@ -35,11 +37,13 @@ trait Stage {
   var status:Int = 0
 
   def failed(exception: Exception){
+    log.error(s"stage $id failed", exception)
     status = 1
     result = Failure(exception)
   }
 
   def ok(str: String){
+    log.info(s"stage $id finished")
     status = 3
     result = Success(str)
   }
@@ -59,14 +63,20 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
 
   def absorb(doc:Document)(implicit executor: ExecutionContext): Future[Document] = {
 
-    //("id"->id, "updateTime"->updateTime)
+    val key = hash(doc)
 
-    doc.asInstanceOf[util.Map[String,Object]] putAll json("stageInfo" -> json("id" -> id, "updateTime" -> updateTime))
-    mongoCollection.insertOne(doc).asFuture.map(_ =>doc)
+    doc.asInstanceOf[util.Map[String,Object]] putAll json("key"-> key, "stageInfo" -> json("id" -> id, "updateTime" -> updateTime))
+
+    mongoCollection.findOneAndUpdate(json("key"->key),json("$setOnInsert"->doc), new FindOneAndUpdateOptions().upsert(true)).asFutureWithoutResult(doc)
+
   }
 
-  def process(source:Source[Document, Any])(implicit executor: ExecutionContext, materializer:Materializer): Future[Source[Document, Any]] ={
+  def hash(doc:Document):Long = {
+    Hashing.fnvHash(doc.toJson)
+  }
 
+  def process(source:Source[Document, Any], returnLeft: Any => Unit) (implicit executor: ExecutionContext, materializer:Materializer): Future[Source[Document, Any]] ={
+    log.info("======= absorb stage {} ========", id)
     status match {
       case 3 =>
         Future{
@@ -76,16 +86,27 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
         status = 2
         source.mapAsync(10){
           doc =>
-            absorb(doc)
-        }.runWith(Sink.last).recover{
-          case e:Exception =>
-            failed(e)
-            throw new StageException("",e)
-        }.map{
-          last =>
-            ok(id)
-            fetchDocs
+            absorb(doc).map{
+              m =>
+                log.info("inserted doc {}", doc)
+                ""
+            }
+        }.toMat(Sink.last)(Keep.both).run() match {
+          case (left, right) =>
+            returnLeft(left)
+            right.recover{
+              case e:Exception =>
+                failed(e)
+                throw new StageException("",e)
+            }.map{
+              last =>
+                ok(id)
+                fetchDocs
+            }
         }
+
+
+
     }
 
   }
@@ -109,6 +130,7 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
 
   def process(source:Source[Document, Any])(implicit executor: ExecutionContext, materializer:Materializer): Future[Source[Map[String,Map[String,Object]], Any]] = {
 
+    log.info("======= convert stage {} ========", id)
     status match {
 
       case 3 =>
@@ -120,9 +142,11 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
         source.mapAsync(3) {
           doc =>
             convert(doc).flatMap {
-              converted =>
-                val doc = new Document(converted + ("stageInfo" -> Map("id" -> id, "updateTime" -> updateTime)))
+              entities =>
+                val doc = new Document(entities + ("stageInfo" -> json("id" -> id, "updateTime" -> updateTime)))
+                log.info("save entity {}", doc.toJson)
                 mongoCollection.insertOne(doc).asFuture
+
             }
         }.runWith(Sink.last).recover {
           case e: Exception =>
@@ -139,7 +163,12 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
   def fetchDocs: Source[Map[String, Map[String, Object]], Any] ={
     MongoSource(mongoCollection.find(json("stageInfo.id"->id))).map {
       doc =>
-        doc.asScala.toMap.map {
+        doc.asScala.toMap.filter{
+          case (k,v:java.util.Map[String, Object]) =>
+            true
+          case _ =>
+            false
+        }.map {
           case (key: String, m: java.util.Map[String, Object]) =>
             (key, m.asScala.toMap)
         }
@@ -165,6 +194,7 @@ class MergeStage(override val id:String, keyMap:util.Map[String, util.List[Strin
   }
 
   def process(source:Source[Map[String,Map[String,Object]], Any])(implicit executor: ExecutionContext, materializer:Materializer): Future[Done] = {
+    log.info("======= merge stage {} ========", id)
     status = 2
     source.map{
       doc =>

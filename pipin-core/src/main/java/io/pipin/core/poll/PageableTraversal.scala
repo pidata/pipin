@@ -3,8 +3,8 @@ package io.pipin.core.poll
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, Uri}
 import akka.http.scaladsl.{Http, HttpExt}
-import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import akka.stream.{Materializer, OverflowStrategy}
+import akka.stream.scaladsl.{Source, SourceQueueWithComplete}
 import akka.util.ByteString
 import akka.{Done, NotUsed}
 import org.slf4j.Logger
@@ -18,7 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 trait PageableTraversal  extends Traversal{
   val pageStartFrom:Int = 0
-  val docSource: Source[Document, NotUsed] = Source.empty[Document]
+  val docSource: Source[Document, SourceQueueWithComplete[Document]] = Source.queue[Document](Integer.MAX_VALUE, OverflowStrategy.fail)
 
   val startUri:Uri
   val pageParameter:String
@@ -27,8 +27,15 @@ trait PageableTraversal  extends Traversal{
   val http: HttpExt = Http()
   implicit val log: Logger
 
+  override def start(queue:Any)(implicit executor: ExecutionContext, materializer:Materializer):Unit = {
+    queue match {
+      case q:SourceQueueWithComplete[Document] =>
+        request(pageStartFrom, q)
+    }
 
-  def request(page:Int)(implicit executor: ExecutionContext, materializer:Materializer): Future[Done] = {
+  }
+
+  private def request(page:Int, queueWithComplete: SourceQueueWithComplete[Document])(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
     val nextQuery: Uri.Query = Uri.Query(initQuery.map {
       case (`pageParameter`, v) =>
         (pageParameter, String.valueOf(page))
@@ -52,18 +59,19 @@ trait PageableTraversal  extends Traversal{
       .map(Document.parse).map {
       doc =>
         log.info("get response with {}", doc)
-        docSource.concat(Source.fromIterator(()=>getContent(doc)))
-
+        getContent(doc).foreach(queueWithComplete.offer)
         if (! endPage(doc)) {
-          request(page + 1)
+          request(page + 1, queueWithComplete)
+        }else{
+          queueWithComplete.complete()
         }
-        Done
+
     }
 
   }
 
-  override def stream()(implicit executor: ExecutionContext, materializer:Materializer): Future[Source[Document, NotUsed]] = {
-    request(pageStartFrom).map(_=>docSource)
+  override def stream()(implicit executor: ExecutionContext, materializer:Materializer): Source[Document, Any] = {
+    docSource
   }
 
   def endPage(doc:Document): Boolean

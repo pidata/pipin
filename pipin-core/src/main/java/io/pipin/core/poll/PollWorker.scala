@@ -19,7 +19,8 @@ class PollWorker(project: Project) {
     implicit val log: Logger = project.workspace.getLogger("Poll")
     val traversal = new SimpleTraversal(pollSettings.startUri, pollSettings.pageParameter, pollSettings.pageStartFrom)
 
-    traversal.stream().map(Job(UUID(),project, project.convertSettings, project.mergeSettings).process)
+
+    Job(UUID(),project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)
 
 
   }

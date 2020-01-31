@@ -11,20 +11,23 @@ import scala.collection.JavaConverters._
   */
 class Identifier(keyRule: KeyRule) {
   def genKey(entity:String, obj:util.Map[String, Object]):Entity = {
-    val str = keyRule.keyFields(entity).asScala.map{
-      field =>
-        obj.get(field).toString
-    }.reduce(_+_)
+    val str = keyRule.keyFields(entity).orElse(Some(obj.keySet())).map {
+      fields =>
+        fields.asScala.map {
+          field =>
+            field + obj.get(field).toString
+        }.reduce(_ + _)
+    }.get
     Entity(entity, Hashing.fnvHashStr(str), obj)
   }
 }
 
 trait KeyRule{
-  def keyFields(entity:String):util.List[String]
+  def keyFields(entity:String):Option[util.Collection[String]]
 }
 
 class KeyRuleInMap(rule:util.Map[String, util.List[String]]) extends KeyRule{
-  override def keyFields(entity: String): util.List[String] = {
-    rule.get(entity)
+  override def keyFields(entity: String): Option[util.Collection[String]] = {
+    Option(rule.get(entity))
   }
 }

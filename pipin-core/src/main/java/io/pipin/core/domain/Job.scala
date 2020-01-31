@@ -2,10 +2,11 @@ package io.pipin.core.domain
 
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.{Done, NotUsed}
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Sink, Source, SourceQueueWithComplete}
 import org.slf4j.Logger
 import org.bson.Document
 import io.pipin.core.Converters._
+import io.pipin.core.repository.Job
 import io.pipin.core.settings.{ConvertSettings, MergeSettings}
 
 import scala.collection.JavaConverters._
@@ -20,8 +21,7 @@ class Job(val id:String,
   var errorMessages = ""
 
   val log: Logger = workspace.getLogger(s"Job")
-  def process(source:Source[Document, Any])(implicit executor: ExecutionContext, materializer:Materializer): Unit ={
-
+  def process(source:Source[Document, Any], queueReady:(Any)=>Unit = (_)=>{})(implicit executor: ExecutionContext, materializer:Materializer): Unit ={
     status match {
       case 1 =>
         retry()
@@ -30,26 +30,31 @@ class Job(val id:String,
       case 0 =>
         startTime = System.currentTimeMillis()
         status = 2
-        absorbStage.process(source).flatMap{
+        absorbStage.process(source, queueReady).flatMap{
           absorbed =>
+            Job.save(this)
             convertStage.process(absorbed)
         }.flatMap{
           converted =>
+            Job.save(this)
             mergeStage.process(converted)
         } map {
           case Done =>
             status = 3
             duration =  ((System.currentTimeMillis() - startTime)/1000).toInt
+            Job.save(this)
             Done
         } recover {
           case e:Exception =>
             status = 1
             errorMessages = e.getMessage
+            Job.save(this)
         }
       case _ =>
     }
-
   }
+
+
 
   def retry()(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
     convertStage.process(absorbStage.fetchDocs).flatMap{
