@@ -17,7 +17,7 @@ object Stage {
   val db =  MongoDB.db
 
   def applyAbsorbStage(implicit log:Logger):AbsorbStage = {
-    new AbsorbStage(UUID(), db.getCollection("absort"))
+    new AbsorbStage(UUID(), db.getCollection("absorb"))
   }
 
   def applyConvertStage(convertSettings: ConvertSettings)(implicit log:Logger):ConvertStage = {
