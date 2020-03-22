@@ -23,7 +23,7 @@ class PollWorker(project: Project) {
     val classTest = classMirror.staticClass(pollSettings.traversalClass)
     val cls1 =  classMirror.reflectClass(classTest)
     val constructor = cls1.reflectConstructor(classTest.primaryConstructor.asMethod)
-    val traversal = constructor.apply(pollSettings.startUri, pollSettings.pageParameter, pollSettings.pageStartFrom, pollSettings.method, actorSystem, log).asInstanceOf[SimpleTraversal]
+    val traversal = constructor.apply(pollSettings.startUri, pollSettings.pageParameter, pollSettings.pageStartFrom, pollSettings, actorSystem, log).asInstanceOf[SimpleTraversal]
 
 
     Job(UUID(),project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)

@@ -7,6 +7,9 @@ import org.bson.Document
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable
+import java.util
+
+import io.pipin.core.settings.PollSettings
 
 /**
   * Created by libin on 2020/1/7.
@@ -14,7 +17,7 @@ import scala.collection.immutable
 class SimpleTraversal(val uri:String,
                       override val pageParameter:String,
                       override val pageStartFrom:Int = 0,
-                      method:String = "GET"
+                      pollSettings:PollSettings
                      )(override implicit val actorSystem: ActorSystem, override implicit val log: Logger) extends PageableTraversal {
 
 
@@ -36,7 +39,7 @@ class SimpleTraversal(val uri:String,
   }
 
   override def getMethod: HttpMethod = {
-    if("GET".equalsIgnoreCase(method)){
+    if("GET".equalsIgnoreCase(pollSettings.method)){
       HttpMethods.GET
     }else{
       HttpMethods.POST
@@ -50,4 +53,7 @@ class SimpleTraversal(val uri:String,
   override def getBody: String = ""
 
   override def headers: Array[Array[String]] = Array.empty
+
+  def settings = pollSettings
+
 }
