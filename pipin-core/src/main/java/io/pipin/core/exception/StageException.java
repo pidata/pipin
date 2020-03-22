@@ -1,6 +1,5 @@
 package io.pipin.core.exception;
 
-import io.pipin.core.domain.Stage;
 
 /**
  * Created by touty on 2020/1/3.
