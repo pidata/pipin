@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory
   */
 class RunWorker extends org.quartz.Job {
   private val logger = LoggerFactory.getLogger("RunWorker")
+
+  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
   def execute (ctx : JobExecutionContext) {
 
     val jobDetail: JobDetail = ctx.getJobDetail

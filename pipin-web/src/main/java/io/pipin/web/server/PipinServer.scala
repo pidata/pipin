@@ -5,11 +5,13 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, Materializer}
 import io.pipin.core.PipinSystem
 import io.pipin.core.repository.{Job, Project}
 import io.pipin.core.util.UUID
 import io.pipin.core.importer.{CSVImporter, JsonImporter}
+
+import scala.concurrent.ExecutionContext
 
 /**
   * Created by libin on 2020/1/10.
@@ -27,7 +29,7 @@ class PipinServer {
   }
 
 
-  def router(): Route ={
+  def router()(implicit executor: ExecutionContext, materializer:Materializer): Route ={
     pathPrefix("endpoints" / Segment){
       projectId =>
         pathEnd{

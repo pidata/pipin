@@ -1,6 +1,5 @@
 package io.redlion.pipin.scheduler.zookeeper
 
-import org.apache.curator.RetryPolicy
 import org.apache.curator.framework.CuratorFramework
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.framework.state.ConnectionState
@@ -8,9 +7,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.zookeeper.{CreateMode, KeeperException, ZooDefs}
 import java.util.Collections
 
-import com.sun.tools.jconsole.JConsoleContext
 import com.typesafe.config.{Config, ConfigFactory}
-import com.typesafe.sslconfig.util.ConfigLoader
 import org.slf4j.LoggerFactory
 
 /**
@@ -23,7 +20,7 @@ import org.slf4j.LoggerFactory
 class ZookeeperFactory(hosts:String, monopoly:String) {
 
 
-  private val zkTools: CuratorFramework = _
+  private var zkTools: CuratorFramework = null
   private val nameSpace:String = ""
 
   private val logger = LoggerFactory.getLogger("ZookeeperFactory")
@@ -40,7 +37,7 @@ class ZookeeperFactory(hosts:String, monopoly:String) {
 
   def connection(): Unit = {
     val retryPolicy = new ExponentialBackoffRetry(1000, Integer.MAX_VALUE)
-    val zkTools: CuratorFramework = CuratorFrameworkFactory.builder.connectString(hosts).namespace(nameSpace).retryPolicy(retryPolicy).build
+    zkTools = CuratorFrameworkFactory.builder.connectString(hosts).namespace(nameSpace).retryPolicy(retryPolicy).build
     zkTools.start
   }
 
@@ -64,7 +61,7 @@ class ZookeeperFactory(hosts:String, monopoly:String) {
         logger.info("连接重新")
         connectionState = "CONNECTED"
         try
-            if (sessionId ne zkTools.getZookeeperClient.getZooKeeper.getSessionId) registerMonopolyQueue()
+            if (sessionId != zkTools.getZookeeperClient.getZooKeeper.getSessionId) registerMonopolyQueue()
         catch {
           case e: Exception =>
             logger.error("注册独占队列失败")
