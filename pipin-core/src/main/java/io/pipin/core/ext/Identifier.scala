@@ -15,7 +15,7 @@ class Identifier(keyRule: KeyRule) {
       fields =>
         fields.asScala.map {
           field =>
-            field + obj.get(field).toString
+            field + obj.get(field)
         }.reduce(_ + _)
     }.get
     Entity(entity, Hashing.fnvHashStr(str), obj)

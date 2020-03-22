@@ -13,6 +13,7 @@
         <module>pipin-web</module>
         <module>pipin-core</module>
         <module>pipin-scheduler</module>
+        <module>pipin-examples</module>
     </modules>
 
 

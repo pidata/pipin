@@ -1,17 +1,24 @@
 package io.pipin.core.poll
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.{HttpHeader, HttpMethod, HttpMethods, Uri}
 import org.slf4j.Logger
 import org.bson.Document
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable
 
 /**
   * Created by libin on 2020/1/7.
   */
-class SimpleTraversal(override val startUri:Uri, override val pageParameter:String, override val pageStartFrom:Int = 0)(override implicit val actorSystem: ActorSystem, override implicit val log: Logger) extends PageableTraversal {
+class SimpleTraversal(val uri:String,
+                      override val pageParameter:String,
+                      override val pageStartFrom:Int = 0,
+                      method:String = "GET"
+                     )(override implicit val actorSystem: ActorSystem, override implicit val log: Logger) extends PageableTraversal {
 
+
+  override def startUri:Uri = Uri(uri)
 
   override def endPage(doc:Document): Boolean ={
     val totalPages = doc.getInteger("totalPages")
@@ -21,6 +28,26 @@ class SimpleTraversal(override val startUri:Uri, override val pageParameter:Stri
   }
 
   override def getContent(doc: Document): Iterator[Document] = {
-    doc.getList("content", classOf[Document]).asScala.toIterator
+    doc.getList(getContentField, classOf[Document]).asScala.toIterator
   }
+
+  def getContentField: String ={
+     "content"
+  }
+
+  override def getMethod: HttpMethod = {
+    if("GET".equalsIgnoreCase(method)){
+      HttpMethods.GET
+    }else{
+      HttpMethods.POST
+    }
+  }
+
+  override def getTokenAuthorizator: TokenAuthorizator = new TokenAuthorizator{
+    override def getToken: String = null
+  }
+
+  override def getBody: String = ""
+
+  override def headers: Array[Array[String]] = Array.empty
 }

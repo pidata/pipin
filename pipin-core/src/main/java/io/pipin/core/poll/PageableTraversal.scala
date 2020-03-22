@@ -1,16 +1,16 @@
 package io.pipin.core.poll
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, Uri}
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.stream.scaladsl.{Source, SourceQueueWithComplete}
-import akka.util.ByteString
-import akka.{Done, NotUsed}
 import org.slf4j.Logger
 import io.pipin.core.exception.JobException
 import org.bson.Document
 
+import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -20,7 +20,7 @@ trait PageableTraversal  extends Traversal{
   val pageStartFrom:Int = 0
   val docSource: Source[Document, SourceQueueWithComplete[Document]] = Source.queue[Document](Integer.MAX_VALUE, OverflowStrategy.fail)
 
-  val startUri:Uri
+  def startUri:Uri
   val pageParameter:String
   val initQuery: Uri.Query = startUri.query()
   implicit val actorSystem:ActorSystem
@@ -35,6 +35,9 @@ trait PageableTraversal  extends Traversal{
 
   }
 
+
+
+
   private def request(page:Int, queueWithComplete: SourceQueueWithComplete[Document])(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
     val nextQuery: Uri.Query = Uri.Query(initQuery.map {
       case (`pageParameter`, v) =>
@@ -47,12 +50,16 @@ trait PageableTraversal  extends Traversal{
 
     log.info("fetch http with url {}", nextUri)
 
-    http.singleRequest(HttpRequest(HttpMethods.GET, nextUri)).flatMap {
+    val headers = getHeaders
+
+    http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody).withHeaders(headers)).flatMap {
       res =>
         if(res.status.isSuccess())
           res.entity.dataBytes.map(_.utf8String).runReduce(_ + _)
         else{
           log.error("http error: {}", res.status.intValue())
+          res.entity.dataBytes.map(_.utf8String).runReduce(_ + _).foreach(log.error)
+          headers.foreach(h=>log.error(h.toString()))
           throw new JobException(s"http error: ${res.status.defaultMessage()}")
         }
     }
@@ -74,8 +81,39 @@ trait PageableTraversal  extends Traversal{
     docSource
   }
 
+  private def getEntityBody:String = {
+    if (HttpMethods.POST.equals(getMethod)){
+      getBody
+    }else{
+      ""
+    }
+  }
+
   def endPage(doc:Document): Boolean
 
   def getContent(doc:Document): Iterator[Document]
+
+  def getTokenAuthorizator:TokenAuthorizator
+
+  def getHeaders:immutable.Seq[HttpHeader] = {
+
+    val httpHeaders = headers.map{
+      ar =>
+        RawHeader(ar(0), ar(1))
+    }.to[immutable.Seq]
+    val token = getTokenAuthorizator.getToken
+    if(null != token){
+      httpHeaders :+ Authorization(OAuth2BearerToken(token))
+    }else{
+      httpHeaders
+    }
+
+  }
+
+  def getMethod:HttpMethod
+
+  def headers:Array[Array[String]]
+
+  def getBody:String
 
 }
