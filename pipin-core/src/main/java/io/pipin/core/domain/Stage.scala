@@ -65,6 +65,8 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
 
     val key = hash(doc)
 
+    log.info("try to find and update doc with key {}", key)
+
     doc.asInstanceOf[util.Map[String,Object]] putAll json("key"-> key, "stageInfo" -> json("id" -> id, "updateTime" -> updateTime))
 
     mongoCollection.findOneAndUpdate(json("key"->key),json("$setOnInsert"->doc), new FindOneAndUpdateOptions().upsert(true)).asFutureWithoutResult(doc)
@@ -149,6 +151,8 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
 
             }
         }.runWith(Sink.last).recover {
+          case e: NoSuchElementException =>
+            log.warn("empty stream")
           case e: Exception =>
             failed(e)
             throw new StageException("", e)
