@@ -6,8 +6,6 @@ import org.slf4j.Logger
 import org.bson.Document
 
 import scala.collection.JavaConverters._
-import scala.collection.immutable
-import java.util
 
 import io.pipin.core.settings.PollSettings
 
@@ -56,4 +54,5 @@ class SimpleTraversal(val uri:String,
 
   def settings = pollSettings
 
+  override def onPageNext(doc: Document): Unit = {}
 }

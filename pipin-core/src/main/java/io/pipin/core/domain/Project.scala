@@ -10,7 +10,7 @@ import io.pipin.core.sink.MongoEntitySink
   */
 class Project(val id:String, var name:String, var source:String = "poll") {
 
-  var convertSettings:ConvertSettings = ConvertSettings()
+  var convertSettings:ConvertSettings = ConvertSettings(name.replace(" ","_"))
   var mergeSettings:MergeSettings = MergeSettings(new util.HashMap[String, util.List[String]], new MongoEntitySink {})
   var pollSettings: PollSettings = PollSettings("", "", 0, "")
   val workspace = Workspace(id = id)

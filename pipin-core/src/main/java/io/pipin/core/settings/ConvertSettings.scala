@@ -7,16 +7,18 @@ import io.pipin.core.ext.Converter
 import scala.collection.JavaConverters._
 import io.pipin.core.Converters._
 
+import scala.reflect.runtime.{universe => ru}
+
 /**
   * Created by libin on 2020/1/8.
   */
-case class ConvertSettings (converter:Converter = (doc: util.Map[String, Object]) => {
-//  doc.asScala.map {
-//    case (k, v: util.Map[String, Object]) =>
-//      (k, v)
-//  }.asJava
-  val obj = new util.HashMap[String,util.Map[String, Object]]()
-  obj.put("doc",doc)
-  obj
-})
+case class ConvertSettings (defaultEntity:String, filter:Array[String] = Array.empty, converterClass:String = "io.pipin.core.convert.FlatAndFilterConverter") {
+  def converter:Converter = {
+    val classMirror = ru.runtimeMirror(getClass.getClassLoader)
+    val classTest = classMirror.staticClass(converterClass)
+    val cls1 =  classMirror.reflectClass(classTest)
+    val constructor = cls1.reflectConstructor(classTest.primaryConstructor.asMethod)
+    constructor.apply(defaultEntity, filter).asInstanceOf[Converter]
+  }
+}
 
