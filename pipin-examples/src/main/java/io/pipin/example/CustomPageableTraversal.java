@@ -42,7 +42,7 @@ public class CustomPageableTraversal extends SimpleTraversal {
     public TokenAuthorizator getTokenAuthorizator() {
         return new TokenAuthorizator(){
             public String getToken() {
-                return "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfYXBwSWQiOiI1ZTFkMWQzZTNkYzA1ZDAwMDFmYmVlNDUiLCJleHAiOjE1ODQ4OTgwNTgsImlhdCI6MTU4NDg2MjA1OH0.jVP5pW-T0QUwvq-boQc09VbF_H0C5dnJ43K6NLy7J9g";
+                return "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfYXBwSWQiOiI1ZTFkMWQzZTNkYzA1ZDAwMDFmYmVlNDUiLCJleHAiOjE1ODQ5Nzk1NzAsImlhdCI6MTU4NDk0MzU3MH0.s-POSjP1Xdmsqm7P-TdQLREa6_4E2choUjikFmYjxRA";
             }
         };
     }

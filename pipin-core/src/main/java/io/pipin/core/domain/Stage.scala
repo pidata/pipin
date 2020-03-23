@@ -72,7 +72,7 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
   }
 
   def hash(doc:Document):Long = {
-    Hashing.fnvHash(doc.toJson)
+    Math.abs(Hashing.fnvHash(doc.toJson))
   }
 
   def process(source:Source[Document, Any], returnLeft: Any => Unit) (implicit executor: ExecutionContext, materializer:Materializer): Future[Source[Document, Any]] ={

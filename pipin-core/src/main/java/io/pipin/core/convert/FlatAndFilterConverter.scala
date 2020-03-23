@@ -21,6 +21,8 @@ class FlatAndFilterConverter(entity:String, fields:Array[String] = Array.empty) 
     doc.asScala.map{
       case (k:String, v:Document) =>
         flat(k, v, result)
+      case (k, v:util.List[String]) =>
+        result.put(k, v.toArray().fold("")( (a,b) => s"$a,$b"))
       case (k, v) =>
         result.put(k, v)
     }
@@ -41,6 +43,8 @@ class FlatAndFilterConverter(entity:String, fields:Array[String] = Array.empty) 
     doc.asScala.map{
       case (k:String, v:Document) =>
         flat(s"${prex}_$k", v, result)
+      case (k, v:util.List[String]) =>
+        result.put(s"${prex}_$k", v.toArray().fold("")( (a,b) => s"$a,$b"))
       case (k, v) =>
         result.put(s"${prex}_$k", v)
     }
