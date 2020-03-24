@@ -16,7 +16,7 @@ class Workspace (id:String){
 
   val logAppender: Appender[ILoggingEvent] = {
 
-    val context: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
+    val context: LoggerContext = new LoggerContext()
     context.setName(s"workspace-$id")
     val patternLayoutEncoder:PatternLayoutEncoder = new PatternLayoutEncoder()
     patternLayoutEncoder.setPattern("%d %-5level # [%thread] %logger{0}: %msg%n")
