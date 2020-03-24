@@ -14,20 +14,25 @@ import scala.reflect.runtime.{universe => ru}
 class PollWorker(project: Project) {
 
   def execute(): Unit = {
-    implicit val actorSystem = PipinSystem.actorSystem
-    implicit val materialize:Materializer =  ActorMaterializer()
-    implicit val executionContext = actorSystem.dispatchers.lookup("poll-dispatcher")
-    val pollSettings: PollSettings = project.pollSettings
     implicit val log: Logger = project.workspace.getLogger("Poll")
-    val classMirror = ru.runtimeMirror(getClass.getClassLoader)
-    val classTest = classMirror.staticClass(pollSettings.traversalClass)
-    val cls1 =  classMirror.reflectClass(classTest)
-    val constructor = cls1.reflectConstructor(classTest.primaryConstructor.asMethod)
-    val traversal = constructor.apply(pollSettings.startUri, pollSettings.pageParameter, pollSettings.pageStartFrom, pollSettings, actorSystem, log).asInstanceOf[SimpleTraversal]
+    try {
+      implicit val actorSystem = PipinSystem.actorSystem
+      implicit val materialize: Materializer = ActorMaterializer()
+      implicit val executionContext = actorSystem.dispatchers.lookup("poll-dispatcher")
+      val pollSettings: PollSettings = project.pollSettings
+
+      val classMirror = ru.runtimeMirror(getClass.getClassLoader)
+      val classTest = classMirror.staticClass(pollSettings.traversalClass)
+      val cls1 = classMirror.reflectClass(classTest)
+      val constructor = cls1.reflectConstructor(classTest.primaryConstructor.asMethod)
+      val traversal = constructor.apply(pollSettings.startUri, pollSettings.pageParameter, pollSettings.pageStartFrom, pollSettings, actorSystem, log).asInstanceOf[SimpleTraversal]
 
 
-    Job(UUID(),project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)
-
+      Job(UUID(), project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)
+    }catch {
+      case e:Throwable =>
+        log.error(s"job execution failed for project ${project.id}", e)
+    }
 
   }
 }

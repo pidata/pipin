@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 object Project {
 
-  val collection: MongoCollection[Document] = MongoDB.db.getCollection("project")
+  val collection: MongoCollection[Document] = MongoDB.db.getCollection("pipin_project")
   def apply(name:String): Project = new Project(UUID(), name)
 
   def applyFromDoc(doc:Document): Project = {
