@@ -25,9 +25,16 @@ public class CustomPageableTraversal extends SimpleTraversal {
         Map<String,String> extraSettings = settings().extraSettings();
         return "{\n" +
                 "  \"_projectId\": \""+extraSettings.get("projectId")+"\",\n" +
-                "  \"_pageToken\": \""+pageToken+"\",\n" +
+                "  \"pageToken\": \""+pageToken+"\",\n" +
                 "  \"pageSize\": 1000\n" +
                 "}";
+    }
+
+    @Override
+    public Map<String, String> extraParamsMap() {
+        Map<String,String> extraSettings = settings().extraSettings();
+        extraSettings.put("pageToken",pageToken);
+        return extraSettings;
     }
 
     @Override

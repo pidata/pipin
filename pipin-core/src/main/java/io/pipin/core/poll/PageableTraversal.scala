@@ -13,6 +13,8 @@ import org.bson.Document
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
+import scala.collection.JavaConverters._
+
 /**
   * Created by libin on 2020/1/7.
   */
@@ -39,7 +41,7 @@ trait PageableTraversal  extends Traversal{
 
 
   private def request(page:Int, queueWithComplete: SourceQueueWithComplete[Document])(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
-    val nextQuery: Uri.Query = Uri.Query(initQuery.map {
+    val nextQuery: Uri.Query = Uri.Query((initQuery++extraParams).map {
       case (`pageParameter`, v) =>
         (pageParameter, String.valueOf(page))
       case (k, v) =>
@@ -118,5 +120,11 @@ trait PageableTraversal  extends Traversal{
   def getBody:String
 
   def onPageNext(doc:Document):Unit
+
+  def extraParams:Seq[(String, String)] = {
+    extraParamsMap.asScala.toSeq
+  }
+
+  def extraParamsMap:java.util.Map[String,String]
 
 }

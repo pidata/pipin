@@ -1,12 +1,13 @@
 package io.pipin.core.poll
 
+import java.util
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.{HttpHeader, HttpMethod, HttpMethods, Uri}
 import org.slf4j.Logger
 import org.bson.Document
 
 import scala.collection.JavaConverters._
-
 import io.pipin.core.settings.PollSettings
 
 /**
@@ -55,4 +56,8 @@ class SimpleTraversal(val uri:String,
   def settings = pollSettings
 
   override def onPageNext(doc: Document): Unit = {}
+
+  override def extraParamsMap: util.Map[String, String] = {
+    new util.HashMap[String,String]()
+  }
 }
