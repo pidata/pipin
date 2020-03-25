@@ -11,6 +11,7 @@ import io.pipin.core.repository.{Job, Project}
 import io.pipin.core.util.UUID
 import io.pipin.core.importer.{CSVImporter, JsonImporter}
 import io.pipin.core.poll.PollWorker
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import scala.util.Success
@@ -24,6 +25,7 @@ import scala.util.Success
 */
 class PipinServer {
 
+  private val logger = LoggerFactory.getLogger("ManagementServer")
 
   def start(): Unit ={
     start(PipinSystem.actorSystem)
@@ -33,31 +35,13 @@ class PipinServer {
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = actorSystem.dispatchers.lookup("web-server-dispatcher")
     Http().bindAndHandle(router(), "0.0.0.0", 8080)
+    logger.info("pipin server started")
   }
 
 
   def router()(implicit executor: ExecutionContext, materializer:Materializer): Route ={
     pathPrefix("projects" / Segment){
       projectId =>
-        pathEnd{
-          get{
-            onComplete(Project.findById(projectId)){
-              case Success(project)=>
-                complete(Project.toDocument(project).toJson())
-            }
-          }
-        } ~
-          pathPrefix("start") {
-            pathEnd {
-              get{
-                onComplete(Project.findById(projectId)){
-                  case Success(project)=>
-                    new PollWorker(project).execute()
-                  complete(Project.toDocument(project).toJson())
-                }
-              }
-            }
-          } ~
         pathPrefix("endpoints"){
             pathEnd{
               post{

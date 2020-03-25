@@ -16,7 +16,7 @@ import scala.concurrent.Future
   */
 object Job {
 
-  val db: MongoDatabase =  MongoDB.db
+  val db: MongoDatabase =  MongoDB.db("pipin_meta")
 
   val dbCollection: MongoCollection[Document] = db.getCollection("job")
 

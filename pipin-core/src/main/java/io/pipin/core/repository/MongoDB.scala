@@ -12,6 +12,10 @@ object MongoDB {
   val (url) = config.getString("mongo.url")
   val mongoClient:MongoClient =  MongoClients.create(new ConnectionString(url))
   def db: MongoDatabase ={
-    mongoClient.getDatabase("pipin")
+    db(config.getString("mongo.database"))
+  }
+
+  def db(db:String): MongoDatabase ={
+    mongoClient.getDatabase(db)
   }
 }

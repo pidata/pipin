@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
   * Created by libin on 2020/1/3.
   */
 object Stage {
-  val db =  MongoDB.db
+  val db =  MongoDB.db("pipin")
 
   def applyAbsorbStage(implicit log:Logger):AbsorbStage = {
     new AbsorbStage(UUID(), db.getCollection("absorb"))

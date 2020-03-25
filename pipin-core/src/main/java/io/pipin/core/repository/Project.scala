@@ -19,7 +19,7 @@ import io.pipin.core.Converters._
   */
 object Project {
 
-  private val collection: MongoCollection[Document] = MongoDB.db.getCollection("pipin_project")
+  private val collection: MongoCollection[Document] = MongoDB.db("pipin_meta").getCollection("pipin_project")
 
   private implicit val formats = new DefaultFormats {
   }
