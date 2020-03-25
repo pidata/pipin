@@ -61,7 +61,7 @@ trait Stage {
 
 class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Document])(override implicit val log:Logger) extends Stage {
 
-  def absorb(doc:Document)(implicit executor: ExecutionContext): Future[Document] = {
+  def absorb(doc:Document)(implicit executor: ExecutionContext): Future[Seq[Document]] = {
 
     val key = hash(doc)
 
@@ -69,7 +69,7 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
 
     doc.asInstanceOf[util.Map[String,Object]] putAll json("key"-> key, "stageInfo" -> json("id" -> id, "updateTime" -> updateTime))
 
-    mongoCollection.findOneAndUpdate(json("key"->key),json("$setOnInsert"->doc), new FindOneAndUpdateOptions().upsert(true)).asFutureWithoutResult(doc)
+    mongoCollection.findOneAndUpdate(json("key"->key),json("$setOnInsert"->doc), new FindOneAndUpdateOptions().upsert(true)).asFuture
 
   }
 

@@ -20,7 +20,7 @@ object Job {
 
   val dbCollection: MongoCollection[Document] = db.getCollection("job")
 
-  def save(job: Job): Future[UpdateResult] = dbCollection.updateOne(json("_id"->job.id), json("$set"->job.toDocument), new UpdateOptions().upsert(true)).asFuture
+  def save(job: Job): Future[Seq[UpdateResult]] = dbCollection.updateOne(json("_id"->job.id), json("$set"->job.toDocument), new UpdateOptions().upsert(true)).asFuture
 
   def apply(id: String, project: Project,
             convertSettings: ConvertSettings, mergeSettings: MergeSettings): Job = {

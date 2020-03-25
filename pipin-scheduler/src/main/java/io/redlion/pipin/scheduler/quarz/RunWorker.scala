@@ -16,19 +16,29 @@ class RunWorker extends org.quartz.Job {
 
   def execute (ctx : JobExecutionContext) {
 
+
     val jobDetail: JobDetail = ctx.getJobDetail
     val projectId = jobDetail.getJobDataMap.getString("projectId")
+    logger.info("execute job for {}", projectId)
     val zookeeperFactory = jobDetail.getJobDataMap.get("zookeeperFactory").asInstanceOf[ZookeeperFactory]
-    zookeeperFactory.connection()
-    if (zookeeperFactory.getMonopolyLock){
-      logger.info("got monopoly lock, start job for project {}", projectId)
+    if(null == zookeeperFactory){
       Project.findById(projectId).map{
         project =>
           new PollWorker(project).execute()
       }
     }else{
-      logger.info("didn't get monopoly lock")
+      zookeeperFactory.connection()
+      if (zookeeperFactory.getMonopolyLock){
+        logger.info("got monopoly lock, start job for project {}", projectId)
+        Project.findById(projectId).map{
+          project =>
+            new PollWorker(project).execute()
+        }
+      }else{
+        logger.info("didn't get monopoly lock")
+      }
     }
+
 
   }
 }

@@ -42,11 +42,10 @@ object Project {
     project
   }
 
-  def save(project:Project): Future[Document] ={
+  def save(project:Project): Future[Seq[Document]] ={
 
     val doc = toDocument(project)
-    collection.findOneAndUpdate(json("_id"->project._id),json("$set"->doc), new FindOneAndUpdateOptions().upsert(true)).asFutureWithoutResult(doc)
-
+    collection.findOneAndUpdate(json("_id"->project._id),json("$set"->doc), new FindOneAndUpdateOptions().upsert(true)).asFuture
 
   }
 
@@ -72,8 +71,16 @@ object Project {
 
   def findById(id:String)(implicit executor: ExecutionContext): Future[Project] = {
     collection.find(json("_id"->id)).asFuture.map {
-      doc =>
+      case Seq(doc) =>
         applyFromDoc(doc)
+    }
+
+  }
+
+  def findAllWithCron()(implicit executor: ExecutionContext): Future[Seq[Project]] = {
+    collection.find(json("jobTrigger"->json("$ne"->null))).asFuture.map {
+      seq =>
+        seq.map(applyFromDoc)
     }
 
   }

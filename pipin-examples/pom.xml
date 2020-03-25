@@ -22,6 +22,11 @@
             <artifactId>pipin-web</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.redlion</groupId>
+            <artifactId>pipin-scheduler</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

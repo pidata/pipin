@@ -12,6 +12,7 @@
 
     <artifactId>pipin-scheduler</artifactId>
 
+
     <dependencies>
         <dependency>
             <groupId>io.redlion</groupId>
@@ -22,11 +23,18 @@
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <version>3.5.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-framework</artifactId>
             <version>4.2.0</version>
+
         </dependency>
 
         <dependency>

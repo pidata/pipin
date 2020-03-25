@@ -20,7 +20,10 @@ import org.slf4j.LoggerFactory
 class ZookeeperFactory(hosts:String, monopoly:String) {
 
 
-  private var zkTools: CuratorFramework = null
+  private var zkTools: CuratorFramework = {
+    val retryPolicy = new ExponentialBackoffRetry(1000, Integer.MAX_VALUE)
+    CuratorFrameworkFactory.builder.connectString(hosts).namespace(nameSpace).retryPolicy(retryPolicy).build
+  }
   private val nameSpace:String = ""
 
   private val logger = LoggerFactory.getLogger("ZookeeperFactory")
@@ -36,8 +39,6 @@ class ZookeeperFactory(hosts:String, monopoly:String) {
 
 
   def connection(): Unit = {
-    val retryPolicy = new ExponentialBackoffRetry(1000, Integer.MAX_VALUE)
-    zkTools = CuratorFrameworkFactory.builder.connectString(hosts).namespace(nameSpace).retryPolicy(retryPolicy).build
     zkTools.start
   }
 
