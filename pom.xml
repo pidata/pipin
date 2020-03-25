@@ -123,6 +123,12 @@
                 <version>${akka.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.json4s</groupId>
+                <artifactId>json4s-native_2.12</artifactId>
+                <version>3.6.7</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_2.12</artifactId>
                 <version>3.0.1</version>

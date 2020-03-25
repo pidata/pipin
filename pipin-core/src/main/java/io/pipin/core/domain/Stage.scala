@@ -184,7 +184,7 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
 }
 
 
-class MergeStage(override val id:String, keyMap:util.Map[String, util.List[String]], entitySink:EntitySink)(override implicit val log:Logger) extends Stage {
+class MergeStage(override val id:String, keyMap:util.Map[String, Array[String]], entitySink:EntitySink)(override implicit val log:Logger) extends Stage {
 
   val identifier:Identifier = new Identifier(new KeyRuleInMap(keyMap))
 

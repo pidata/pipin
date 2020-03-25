@@ -25,7 +25,7 @@ class MongoEntitySink extends EntitySink{
     val doc = new Document(entity.value)
     doc.put("key", key)
     collection.findOneAndUpdate(json("key"->key),
-      json("$setOnInsert"->doc),
+      json("$set"->doc),
       new FindOneAndUpdateOptions().upsert(true)).subscribe(new Subscriber[Document] {
       override def onError(throwable: Throwable): Unit = {}
 

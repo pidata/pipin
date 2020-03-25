@@ -16,6 +16,7 @@ class PollWorker(project: Project) {
   def execute(): Unit = {
     implicit val log: Logger = project.workspace.getLogger("Poll")
     try {
+      log.info("starting project {}", project._id)
       implicit val actorSystem = PipinSystem.actorSystem
       implicit val materialize: Materializer = ActorMaterializer()
       implicit val executionContext = actorSystem.dispatchers.lookup("poll-dispatcher")
@@ -31,7 +32,7 @@ class PollWorker(project: Project) {
       Job(UUID(), project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)
     }catch {
       case e:Throwable =>
-        log.error(s"job execution failed for project ${project.id}", e)
+        log.error(s"job execution failed for project ${project._id}", e)
     }
 
   }

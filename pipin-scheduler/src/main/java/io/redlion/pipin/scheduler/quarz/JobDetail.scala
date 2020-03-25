@@ -10,8 +10,8 @@ import org.quartz.{JobBuilder, JobDataMap, JobDetail}
 object JobDetail{
   def apply(job:Job): JobDetail = {
     val jobDataMap = new JobDataMap()
-    jobDataMap.put("projectId", job.project.id)
-    jobDataMap.put("ZookeeperFactory", ZookeeperFactory(job.project.id))
+    jobDataMap.put("projectId", job.project._id)
+    jobDataMap.put("ZookeeperFactory", ZookeeperFactory(job.project._id))
     JobBuilder.newJob(classOf[RunWorker])
       .withIdentity(job.id)
       .setJobData(jobDataMap)

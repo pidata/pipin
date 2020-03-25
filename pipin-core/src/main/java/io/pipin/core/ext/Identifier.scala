@@ -26,8 +26,8 @@ trait KeyRule{
   def keyFields(entity:String):Option[util.Collection[String]]
 }
 
-class KeyRuleInMap(rule:util.Map[String, util.List[String]]) extends KeyRule{
+class KeyRuleInMap(rule:util.Map[String, Array[String]]) extends KeyRule{
   override def keyFields(entity: String): Option[util.Collection[String]] = {
-    Option(rule.get(entity))
+    Option(util.Arrays.asList(rule.get(entity):_*) )
   }
 }

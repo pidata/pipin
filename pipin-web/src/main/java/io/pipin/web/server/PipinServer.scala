@@ -10,8 +10,10 @@ import io.pipin.core.PipinSystem
 import io.pipin.core.repository.{Job, Project}
 import io.pipin.core.util.UUID
 import io.pipin.core.importer.{CSVImporter, JsonImporter}
+import io.pipin.core.poll.PollWorker
 
 import scala.concurrent.ExecutionContext
+import scala.util.Success
 
 /**
   * Created by libin on 2020/1/10.
@@ -22,6 +24,11 @@ import scala.concurrent.ExecutionContext
 */
 class PipinServer {
 
+
+  def start(): Unit ={
+    start(PipinSystem.actorSystem)
+  }
+
   def start(implicit actorSystem: ActorSystem): Unit ={
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = actorSystem.dispatchers.lookup("web-server-dispatcher")
@@ -30,31 +37,54 @@ class PipinServer {
 
 
   def router()(implicit executor: ExecutionContext, materializer:Materializer): Route ={
-    pathPrefix("endpoints" / Segment){
+    pathPrefix("projects" / Segment){
       projectId =>
         pathEnd{
-          post{
-            fileUpload("csv"){
-              case (fileInfo, source) =>
-                onSuccess(Project.findById(projectId)){
-                  project =>
-
-                    Job(UUID(),project).process(new CSVImporter().stream(source))
-                    complete("importing started")
-                }
-            } ~ fileUpload("json"){
-              case (fileInfo, source) =>
-                onSuccess(Project.findById(projectId)){
-                  project =>
-
-                    Job(UUID(),project).process(new JsonImporter().stream(source))
-                    complete("importing started")
-                }
+          get{
+            onComplete(Project.findById(projectId)){
+              case Success(project)=>
+                complete(Project.toDocument(project).toJson())
             }
-
           }
+        } ~
+          pathPrefix("start") {
+            pathEnd {
+              get{
+                onComplete(Project.findById(projectId)){
+                  case Success(project)=>
+                    new PollWorker(project).execute()
+                  complete(Project.toDocument(project).toJson())
+                }
+              }
+            }
+          } ~
+        pathPrefix("endpoints"){
+            pathEnd{
+              post{
+                fileUpload("csv"){
+                  case (fileInfo, source) =>
+                    onSuccess(Project.findById(projectId)){
+                      project =>
+
+                        Job(UUID(),project).process(new CSVImporter().stream(source))
+                        complete("importing started")
+                    }
+                } ~ fileUpload("json"){
+                  case (fileInfo, source) =>
+                    onSuccess(Project.findById(projectId)){
+                      project =>
+
+                        Job(UUID(),project).process(new JsonImporter().stream(source))
+                        complete("importing started")
+                    }
+                }
+
+              }
+            }
         }
     }
+
+
   }
 
 }

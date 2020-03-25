@@ -1,5 +1,6 @@
 package io.pipin.core.poll
 
+import io.pipin.core.domain.Project
 import io.pipin.core.repository.Project
 import io.pipin.core.settings.PollSettings
 
@@ -9,7 +10,7 @@ import io.pipin.core.settings.PollSettings
 object PollWorkerTest {
 
   def main(args: Array[String]): Unit = {
-    val project = Project("test")
+    val project = new Project("test","test")
     project.pollSettings = PollSettings("https://mall.lepiepie.com/api/comments?page=0", "page", 1)
     new PollWorker(project).execute()
   }
