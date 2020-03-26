@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.redlion</groupId>
+    <groupId>com.github.pidata</groupId>
     <artifactId>pipin</artifactId>
     <packaging>pom</packaging>
     <version>0.3.1-SNAPSHOT</version>
@@ -13,7 +13,6 @@
         <module>pipin-web</module>
         <module>pipin-core</module>
         <module>pipin-scheduler</module>
-        <module>pipin-examples</module>
     </modules>
 
 
@@ -172,7 +171,7 @@
                 <version>2.4.2</version>
             </dependency>
             <dependency>
-                <groupId>io.pipin</groupId>
+                <groupId>com.github.pidata</groupId>
                 <artifactId>pipin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
