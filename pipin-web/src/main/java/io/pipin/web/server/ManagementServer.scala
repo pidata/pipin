@@ -2,6 +2,9 @@ package io.pipin.web.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{ContentTypes, HttpHeader}
+import akka.http.scaladsl.model.headers
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.{ActorMaterializer, Materializer}
@@ -35,13 +38,17 @@ class ManagementServer {
   }
 
 
-  def router()(implicit executor: ExecutionContext, materializer:Materializer): Route = {
-    pathPrefix("projects" ) {
-      ProjectRoute.router()
-    } ~
-      pathPrefix("jobs" ) {
-        JobRoute.router()
-      }
+  private def router()(implicit executor: ExecutionContext, materializer:Materializer): Route = {
+
+
+    respondWithHeaders(headers.`Content-Type`(ContentTypes.`application/json`), RawHeader("Server", "PiPin")){
+      pathPrefix("projects" ) {
+        ProjectRoute.router()
+      } ~
+        pathPrefix("jobs" ) {
+          JobRoute.router()
+        }
+    }
   }
 }
 

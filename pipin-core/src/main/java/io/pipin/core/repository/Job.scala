@@ -7,14 +7,17 @@ import com.mongodb.reactivestreams.client.{MongoCollection, MongoDatabase}
 import io.pipin.core.domain.{Job, Project, Workspace}
 import io.pipin.core.settings.{ConvertSettings, MergeSettings}
 import io.pipin.core.Converters._
+import io.pipin.core.repository.Project.{applyFromDoc, collection}
 import org.bson.Document
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * Created by libin on 2020/1/9.
   */
 object Job {
+
+
 
   val db: MongoDatabase =  MongoDB.db("pipin_meta")
 
@@ -34,5 +37,27 @@ object Job {
   def apply(id: String, project: Project): Job = {
     apply(id, project, project.convertSettings, project.mergeSettings)
   }
+
+  var pageSize: Int = 10
+
+  def findAll(page:Int)(implicit executor: ExecutionContext): Future[Seq[Document]] = {
+    val offset = page * pageSize
+    dbCollection.find().skip(offset).limit(pageSize).asFuture
+  }
+
+  def findByProject(projectId:String, page:Int)(implicit executor: ExecutionContext): Future[Seq[Document]] = {
+    val offset = page * pageSize
+    dbCollection.find(json("project._id"->projectId)).skip(offset).limit(pageSize).asFuture
+  }
+
+
+  def findById(id:String)(implicit executor: ExecutionContext): Future[Option[Document]] = {
+    dbCollection.find(json("_id"->id)).asFuture.map(_.headOption)
+  }
+
+
+    private def applyFromDoc(doc:Document): Job = {
+      Job("", new Project("","",""))
+    }
 
 }

@@ -23,7 +23,7 @@ class RunWorker extends org.quartz.Job {
     val zookeeperFactory = jobDetail.getJobDataMap.get("zookeeperFactory").asInstanceOf[ZookeeperFactory]
     if(null == zookeeperFactory){
       Project.findById(projectId).map{
-        project =>
+        case Some(project) =>
           new PollWorker(project).execute()
       }
     }else{
@@ -31,7 +31,7 @@ class RunWorker extends org.quartz.Job {
       if (zookeeperFactory.getMonopolyLock){
         logger.info("got monopoly lock, start job for project {}", projectId)
         Project.findById(projectId).map{
-          project =>
+          case Some(project) =>
             new PollWorker(project).execute()
         }
       }else{

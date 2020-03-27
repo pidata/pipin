@@ -24,6 +24,15 @@ object Project {
   private implicit val formats = new DefaultFormats {
   }
 
+  def apply(doc:Document):Project = {
+    applyFromDoc(doc)
+  }
+
+  def apply(id:String, doc:Document):Project = {
+    doc.put("_id",id)
+    applyFromDoc(doc)
+  }
+
 
   private def applyFromDoc(doc:Document): Project = {
     implicit val formats = DefaultFormats
@@ -42,11 +51,9 @@ object Project {
     project
   }
 
-  def save(project:Project): Future[Seq[Document]] ={
-
+  def save(project:Project)(implicit executor: ExecutionContext): Future[Option[Document]] ={
     val doc = toDocument(project)
-    collection.findOneAndUpdate(json("_id"->project._id),json("$set"->doc), new FindOneAndUpdateOptions().upsert(true)).asFuture
-
+    collection.findOneAndUpdate(json("_id"->project._id),json("$set"->doc), new FindOneAndUpdateOptions().upsert(true)).asFuture.map(_.headOption)
   }
 
   def toDocument(project:Project): Document ={
@@ -69,12 +76,24 @@ object Project {
     doc
   }
 
-  def findById(id:String)(implicit executor: ExecutionContext): Future[Project] = {
+  def findById(id:String)(implicit executor: ExecutionContext): Future[Option[Project]] = {
     collection.find(json("_id"->id)).asFuture.map {
       case Seq(doc) =>
-        applyFromDoc(doc)
+        Some(applyFromDoc(doc))
+      case _ =>
+        None
     }
 
+  }
+
+  var pageSize: Int = 10
+
+  def findAll(page:Int)(implicit executor: ExecutionContext): Future[Seq[Project]] = {
+    val offset = page * pageSize
+    collection.find().skip(offset).limit(pageSize).asFuture.map {
+      seq =>
+        seq.map(applyFromDoc)
+    }
   }
 
   def findAllWithCron()(implicit executor: ExecutionContext): Future[Seq[Project]] = {

@@ -73,7 +73,7 @@ class Job(val id:String,
   }
 
   def toDocument: Document = {
-    new Document(Map("id"->id, "startTime"->startTime, "duration"->duration, "status"->status,
+    new Document(Map("id"->id, "startTime"->startTime, "duration"->duration, "status"->status, "project"->json("_id"->project._id),
       "absorbStage"->absorbStage.toDocument, "convertStage"->convertStage.toDocument, "mergeStage"->mergeStage.toDocument
     ))
   }

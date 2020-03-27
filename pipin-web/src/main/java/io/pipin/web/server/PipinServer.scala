@@ -48,7 +48,7 @@ class PipinServer {
                 fileUpload("csv"){
                   case (fileInfo, source) =>
                     onSuccess(Project.findById(projectId)){
-                      project =>
+                      case Some(project) =>
 
                         Job(UUID(),project).process(new CSVImporter().stream(source))
                         complete("importing started")
@@ -56,7 +56,7 @@ class PipinServer {
                 } ~ fileUpload("json"){
                   case (fileInfo, source) =>
                     onSuccess(Project.findById(projectId)){
-                      project =>
+                      case Some(project) =>
 
                         Job(UUID(),project).process(new JsonImporter().stream(source))
                         complete("importing started")
