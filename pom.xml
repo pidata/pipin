@@ -26,12 +26,9 @@
 
     <repositories>
         <repository>
-            <id>touty-snapshots</id>
-            <name>touty release</name>
-            <url>http://dev.touty.cn:8081/nexus/content/repositories/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/pidata</url>
         </repository>
     </repositories>
 
