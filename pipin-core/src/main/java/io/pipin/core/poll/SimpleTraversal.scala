@@ -22,6 +22,11 @@ class SimpleTraversal(val uri:String,
 
   override def startUri:Uri = Uri(uri)
 
+  /** *
+    * 判断是否为最后一页的依据
+    *
+    * @return
+    */
   override def endPage(doc:Document): Boolean ={
     val totalPages = doc.getInteger("totalPages")
     val pageNumber = doc.getInteger("number")
@@ -33,9 +38,12 @@ class SimpleTraversal(val uri:String,
     doc.getList(getContentField, classOf[Document]).asScala.toIterator
   }
 
-  def getContentField: String ={
-     "content"
-  }
+  /** *
+    * 结果【列表】所在的字段
+    *
+    * @return
+    */
+  def getContentField = "content"
 
   override def getMethod: HttpMethod = {
     if("GET".equalsIgnoreCase(pollSettings.method)){
