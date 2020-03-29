@@ -27,8 +27,14 @@
     <repositories>
         <repository>
             <id>github</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/pidata</url>
+            <name>pipin</name>
+            <url>https://maven.pkg.github.com/pidata/pipin</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -237,7 +243,7 @@
     </build>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>SequoiaDB Driver Library</description>
+    <description>PiPin is a tool for developing and managing continuous data integration</description>
     <url>https://github.com/pidata/pipin</url>
 
     <licenses>
@@ -270,7 +276,7 @@
         <repository>
             <id>github</id>
             <name>pipin</name>
-            <url>https://maven.pkg.github.com/pidata</url>
+            <url>https://maven.pkg.github.com/pidata/pipin</url>
         </repository>
     </distributionManagement>
 
