@@ -145,7 +145,7 @@
             <dependency>
                 <groupId>io.spray</groupId>
                 <artifactId>spray-json_2.12</artifactId>
-                <version>1.3.3</version>
+                <version>1.3.5</version>
             </dependency>
             <dependency>
                 <groupId>com.cwbase</groupId>
@@ -261,19 +261,19 @@
 
     <scm>
         <connection>
-            scm:git:https://e.coding.net/pidata/pipin.git
+            scm:git:https://github.com/pidata/pipin.git
         </connection>
         <developerConnection>
-            scm:git:https://e.coding.net/pidata/pipin.git
+            scm:git:https://github.com/pidata/pipin.git
         </developerConnection>
-        <url>https://e.coding.net/pidata/pipin.git</url>
+        <url>https://github.com/pidata/pipin</url>
     </scm>
 
     <distributionManagement>
         <repository>
-            <id>pidata-pipin-pipin</id>
+            <id>github</id>
             <name>pipin</name>
-            <url>https://pidata-maven.pkg.coding.net/repository/pipin/pipin/</url>
+            <url>https://maven.pkg.github.com/pidata</url>
         </repository>
     </distributionManagement>
 
