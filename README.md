@@ -1,6 +1,6 @@
-##派拼是一个跨平台数据集成框架
+## 派拼是一个跨平台数据集成框架
 
-##主要特性有：
+## 主要特性有：
 
 1. 每个任务分成吸收 转换 去重合并三个阶段，集成过程可回溯，发生错误可重试。
 
@@ -19,7 +19,7 @@
 8. TODO: 提供操作界面。
 
 
-##环境依赖：
+## 环境依赖：
 
 运行pipin-core 需要mongodb
 
@@ -28,4 +28,7 @@
 可以根据需要自行选择
 
 
+
 [开发文档 https://reference-pidata.doc.coding.io](https://reference-pidata.doc.coding.io)
+
+[实例项目 https://github.com/pidata/pipin-examples](https://github.com/pidata/pipin-examples)
