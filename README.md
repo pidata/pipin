@@ -1,4 +1,4 @@
-## 派拼是一个跨平台数据集成框架
+## 派拼是一个高效数据集成框架
 
 ## 主要特性有：
 
@@ -29,6 +29,8 @@
 
 
 
-[开发文档 https://reference-pidata.doc.coding.io](https://reference-pidata.doc.coding.io)
+[开发文档 https://github.com/pidata/pipin/wiki](https://github.com/pidata/pipin/wiki)
+
+[Restful接口文档 https://reference-pidata.doc.coding.io](https://reference-pidata.doc.coding.io)
 
 [实例项目 https://github.com/pidata/pipin-examples](https://github.com/pidata/pipin-examples)
