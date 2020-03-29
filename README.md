@@ -29,6 +29,8 @@
 
 
 
-[开发文档 https://reference-pidata.doc.coding.io](https://reference-pidata.doc.coding.io)
+[开发文档 https://github.com/pidata/pipin/wiki](https://github.com/pidata/pipin/wiki)
+
+[Restful接口文档 https://reference-pidata.doc.coding.io](https://reference-pidata.doc.coding.io)
 
 [实例项目 https://github.com/pidata/pipin-examples](https://github.com/pidata/pipin-examples)
