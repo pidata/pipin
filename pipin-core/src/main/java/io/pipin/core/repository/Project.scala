@@ -56,6 +56,12 @@ object Project {
     collection.findOneAndUpdate(json("_id"->project._id),json("$set"->doc), new FindOneAndUpdateOptions().upsert(true)).asFuture.map(_.headOption)
   }
 
+  def saveProject(project:Project): Future[Option[Document]] ={
+    this.save(project)(scala.concurrent.ExecutionContext.global)
+  }
+
+
+
   def toDocument(project:Project): Document ={
     implicit val formats = DefaultFormats
     val doc = new Document(

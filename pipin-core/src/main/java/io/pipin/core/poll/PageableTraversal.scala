@@ -24,7 +24,7 @@ trait PageableTraversal  extends Traversal{
 
   def startUri:Uri
   val pageParameter:String
-  val initQuery: Uri.Query = startUri.query()
+  val initQuery: Seq[(String, String)] = (startUri.query().toMap + (pageParameter -> pageStartFrom.toString)).toSeq
   implicit val actorSystem:ActorSystem
   val http: HttpExt = Http()
   implicit val log: Logger
@@ -41,7 +41,7 @@ trait PageableTraversal  extends Traversal{
 
 
   private def request(page:Int, queueWithComplete: SourceQueueWithComplete[Document])(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
-    val nextQuery: Uri.Query = Uri.Query((initQuery++extraParams).map {
+    val nextQuery: Uri.Query = Uri.Query((initQuery ++ extraParams).map {
       case (`pageParameter`, v) =>
         (pageParameter, String.valueOf(page))
       case (k, v) =>
