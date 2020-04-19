@@ -168,6 +168,8 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
     MongoSource(mongoCollection.find(json("stageInfo.id"->id))).map {
       doc =>
         doc.asScala.toMap.filter{
+          case ("stageInfo", v) =>
+            false
           case (k,v:java.util.Map[String, Object]) =>
             true
           case _ =>

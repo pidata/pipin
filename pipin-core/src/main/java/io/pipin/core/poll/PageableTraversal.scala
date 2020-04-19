@@ -59,7 +59,7 @@ trait PageableTraversal  extends Traversal{
         if(res.status.isSuccess())
           res.entity.dataBytes.map(_.utf8String).runReduce(_ + _)
         else{
-          log.error("http error: {}", res.status.intValue())
+          log.error("http error: {} method: {}", res.status.intValue(), getMethod)
           res.entity.dataBytes.map(_.utf8String).runReduce(_ + _).foreach(log.error)
           headers.foreach(h=>log.error(h.toString()))
           throw new JobException(s"http error: ${res.status.defaultMessage()}")
