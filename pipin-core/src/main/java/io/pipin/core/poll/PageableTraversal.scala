@@ -124,8 +124,6 @@ trait PageableTraversal  extends Traversal{
 
   def onPageNext(doc:Document, params:java.util.Map[String,String]):Unit
 
-  def extraParamsMap:java.util.Map[String,String]
-
   def extraParamsBatch:Array[java.util.Map[String,String]]
 
 }
