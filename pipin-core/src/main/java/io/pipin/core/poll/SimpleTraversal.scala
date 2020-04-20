@@ -64,7 +64,7 @@ class SimpleTraversal(val uri:String,
 
   def settings = pollSettings
 
-  override def onPageNext(doc: Document): Unit = {}
+  override def onPageNext(doc: Document, params:util.Map[String, String]): Unit = {}
 
   override def extraParamsMap: util.Map[String, String] = {
     new util.HashMap[String,String]()

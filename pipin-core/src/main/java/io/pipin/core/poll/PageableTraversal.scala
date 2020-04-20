@@ -73,7 +73,7 @@ trait PageableTraversal  extends Traversal{
         log.info("get response with {}", doc)
         getContent(doc).foreach(queueWithComplete.offer)
         if (! endPage(doc)) {
-          onPageNext(doc)
+          onPageNext(doc, extraParams)
           request(page + 1, extraParams, queueWithComplete)
         }else{
           queueWithComplete.complete()
@@ -122,7 +122,7 @@ trait PageableTraversal  extends Traversal{
 
   def getBody(extraParams:java.util.Map[String,String]):String
 
-  def onPageNext(doc:Document):Unit
+  def onPageNext(doc:Document, params:java.util.Map[String,String]):Unit
 
   def extraParamsMap:java.util.Map[String,String]
 
