@@ -32,7 +32,10 @@ trait PageableTraversal  extends Traversal{
   override def start(queue:Any)(implicit executor: ExecutionContext, materializer:Materializer):Unit = {
     queue match {
       case q:SourceQueueWithComplete[Document] =>
-        request(pageStartFrom, q)
+        extraParamsBatch.foreach{
+          extraParams =>
+            request(pageStartFrom, extraParams, q)
+        }
     }
 
   }
@@ -40,8 +43,8 @@ trait PageableTraversal  extends Traversal{
 
 
 
-  private def request(page:Int, queueWithComplete: SourceQueueWithComplete[Document])(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
-    val nextQuery: Uri.Query = Uri.Query((initQuery ++ extraParams).map {
+  private def request(page:Int, extraParams:java.util.Map[String,String], queueWithComplete: SourceQueueWithComplete[Document])(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
+    val nextQuery: Uri.Query = Uri.Query((initQuery ++ extraParams.asScala.toSeq).map {
       case (`pageParameter`, v) =>
         (pageParameter, String.valueOf(page))
       case (k, v) =>
@@ -54,7 +57,7 @@ trait PageableTraversal  extends Traversal{
 
     val headers = getHeaders
 
-    http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody).withHeaders(headers)).flatMap {
+    http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody(extraParams)).withHeaders(headers)).flatMap {
       res =>
         if(res.status.isSuccess())
           res.entity.dataBytes.map(_.utf8String).runReduce(_ + _)
@@ -71,7 +74,7 @@ trait PageableTraversal  extends Traversal{
         getContent(doc).foreach(queueWithComplete.offer)
         if (! endPage(doc)) {
           onPageNext(doc)
-          request(page + 1, queueWithComplete)
+          request(page + 1, extraParams, queueWithComplete)
         }else{
           queueWithComplete.complete()
         }
@@ -84,9 +87,9 @@ trait PageableTraversal  extends Traversal{
     docSource
   }
 
-  private def getEntityBody:String = {
+  private def getEntityBody(extraParams:java.util.Map[String,String]):String = {
     if (HttpMethods.POST.equals(getMethod)){
-      getBody
+      getBody(extraParams)
     }else{
       ""
     }
@@ -117,14 +120,12 @@ trait PageableTraversal  extends Traversal{
 
   def headers:Array[Array[String]]
 
-  def getBody:String
+  def getBody(extraParams:java.util.Map[String,String]):String
 
   def onPageNext(doc:Document):Unit
 
-  def extraParams:Seq[(String, String)] = {
-    extraParamsMap.asScala.toSeq
-  }
-
   def extraParamsMap:java.util.Map[String,String]
+
+  def extraParamsBatch:Array[java.util.Map[String,String]]
 
 }

@@ -57,7 +57,8 @@ class SimpleTraversal(val uri:String,
     override def getToken: String = null
   }
 
-  override def getBody: String = ""
+
+  override def getBody(extraParams: util.Map[String, String]): String = ""
 
   override def headers: Array[Array[String]] = Array.empty
 
@@ -68,4 +69,9 @@ class SimpleTraversal(val uri:String,
   override def extraParamsMap: util.Map[String, String] = {
     new util.HashMap[String,String]()
   }
+
+  override def extraParamsBatch: Array[util.Map[String, String]] = {
+    Array(extraParamsMap)
+  }
+
 }
