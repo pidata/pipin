@@ -35,7 +35,7 @@ class SimpleTraversal(val uri:String,
   }
 
   override def getContent(doc: Document): Iterator[Document] = {
-    doc.getList(getContentField, classOf[Document]).asScala.toIterator
+    doc.get(getContentField, classOf[java.util.List[Document]]).asScala.toIterator
   }
 
   /** *

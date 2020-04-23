@@ -95,13 +95,9 @@ trait PageableTraversal  extends Traversal{
     }
   }
 
-  def endPage(doc:Document): Boolean
 
-  def getContent(doc:Document): Iterator[Document]
 
-  def getTokenAuthorizator:TokenAuthorizator
-
-  def getHeaders:immutable.Seq[HttpHeader] = {
+  private def getHeaders:immutable.Seq[HttpHeader] = {
 
     val httpHeaders = headers.map{
       ar =>
@@ -115,6 +111,12 @@ trait PageableTraversal  extends Traversal{
     }
 
   }
+
+  def endPage(doc:Document): Boolean
+
+  def getContent(doc:Document): Iterator[Document]
+
+  def getTokenAuthorizator:TokenAuthorizator
 
   def getMethod:HttpMethod
 

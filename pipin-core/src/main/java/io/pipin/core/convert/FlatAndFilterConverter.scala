@@ -2,7 +2,8 @@ package io.pipin.core.convert
 
 import java.util
 
-import io.pipin.core.ext.Converter
+import io.pipin.core.ext.{AbstractConverter, Converter}
+import io.pipin.core.settings.ConvertSettings
 import org.bson.Document
 
 import scala.collection.JavaConverters._
@@ -15,7 +16,12 @@ import scala.collection.mutable
 /*
 *
 */
-class FlatAndFilterConverter(entity:String, fields:Array[String] = Array.empty) extends Converter{
+class FlatAndFilterConverter(val convertSettings: ConvertSettings) extends AbstractConverter(convertSettings){
+
+  val fields: Array[String] = convertSettings.filter
+
+  val entity: String = convertSettings.defaultEntity
+
   override def convert(doc: util.Map[String, Object]): util.Map[String, util.Map[String, Object]] = {
     val result:mutable.Map[String,AnyRef] = mutable.Map()
     doc.asScala.map{

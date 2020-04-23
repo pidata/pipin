@@ -18,7 +18,7 @@ case class ConvertSettings (defaultEntity:String, filter:Array[String] = Array.e
     val classTest = classMirror.staticClass(converterClass)
     val cls1 =  classMirror.reflectClass(classTest)
     val constructor = cls1.reflectConstructor(classTest.primaryConstructor.asMethod)
-    constructor.apply(defaultEntity, filter).asInstanceOf[Converter]
+    constructor.apply(this).asInstanceOf[Converter]
   }
 }
 
