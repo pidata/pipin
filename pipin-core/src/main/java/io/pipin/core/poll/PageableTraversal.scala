@@ -80,6 +80,9 @@ trait PageableTraversal  extends Traversal{
           queueWithComplete.complete()
         }
 
+    }.recover{
+      case e:Throwable =>
+        log.error("http resource error", e)
     }
 
   }
