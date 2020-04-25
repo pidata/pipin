@@ -70,8 +70,9 @@ trait PageableTraversal  extends Traversal{
     }
       .map(Document.parse).map {
       doc =>
-        log.info("get response with {}", doc)
-        getContent(doc).foreach(queueWithComplete.offer)
+        val content = getContent(doc)
+        log.info("get response with {}", content.size)
+        content.foreach(queueWithComplete.offer)
         if (! endPage(doc)) {
           onPageNext(doc, extraParams)
           request(page + 1, extraParams, queueWithComplete)
