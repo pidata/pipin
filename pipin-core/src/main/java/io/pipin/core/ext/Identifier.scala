@@ -33,7 +33,7 @@ class KeyRuleInMap(rules:util.Map[String, Array[String]], log:Logger) extends Ke
       rule =>
         util.Arrays.asList(rule:_*)
     } orElse{
-      log.error("can not find rule for {}, in {}, will use all fields to generate key", entity, rules)
+      log.error(s"can not find rule for ${entity}, will use all fields to generate key")
       None
     }
   }
