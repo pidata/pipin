@@ -3,6 +3,7 @@ package io.pipin.core.ext
 import java.util
 
 import io.pipin.core.util.Hashing
+import org.slf4j.Logger
 
 import scala.collection.JavaConverters._
 
@@ -26,8 +27,14 @@ trait KeyRule{
   def keyFields(entity:String):Option[util.Collection[String]]
 }
 
-class KeyRuleInMap(rule:util.Map[String, Array[String]]) extends KeyRule{
+class KeyRuleInMap(rules:util.Map[String, Array[String]], log:Logger) extends KeyRule{
   override def keyFields(entity: String): Option[util.Collection[String]] = {
-    Option(util.Arrays.asList(rule.get(entity):_*) )
+    Option(rules.get(entity)) map {
+      rule =>
+        util.Arrays.asList(rule:_*)
+    } orElse{
+      log.error("can not find rule for {}, in {}, will use all fields to generate key", entity, rules)
+      None
+    }
   }
 }

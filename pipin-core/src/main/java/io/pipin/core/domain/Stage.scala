@@ -90,7 +90,7 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
           doc =>
             absorb(doc).map{
               m =>
-                log.info("inserted doc {}", doc)
+                log.info("absorb doc {}", doc)
                 ""
             }
         }.toMat(Sink.last)(Keep.both).run() match {
@@ -146,7 +146,7 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
             convert(doc).flatMap {
               entities =>
                 val doc = new Document(entities + ("stageInfo" -> json("id" -> id, "updateTime" -> updateTime)))
-                log.info("save entity {}", doc.toJson)
+                //log.info("save entity {}", doc.toJson)
                 mongoCollection.insertOne(doc).asFuture
 
             }
@@ -188,7 +188,7 @@ class ConvertStage(override val id:String, mongoCollection: MongoCollection[Docu
 
 class MergeStage(override val id:String, keyMap:util.Map[String, Array[String]], entitySink:EntitySink)(override implicit val log:Logger) extends Stage {
 
-  val identifier:Identifier = new Identifier(new KeyRuleInMap(keyMap))
+  val identifier:Identifier = new Identifier(new KeyRuleInMap(keyMap, log))
 
 
   def merge(input: Map[String,Map[String,Object]]): Seq[Entity] = {
@@ -212,7 +212,7 @@ class MergeStage(override val id:String, keyMap:util.Map[String, Array[String]],
           entitySink.asyncUpdate(entity,promise)
           promise.future
         }))
-    }.runWith(Sink.foreach(println)).recover{
+    }.runWith(Sink.foreach(x=>log.info("processed {} entities ", x.size))).recover{
       case e:Exception =>
         failed(e)
         throw new StageException("",e)
