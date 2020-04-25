@@ -51,7 +51,7 @@ trait PageableTraversal  extends Traversal{
         (k, v)
     }: _*)
 
-    val nextUri = Uri("http", startUri.authority, startUri.path, Some(nextQuery.toString()))
+    val nextUri = Uri(startUri.scheme, startUri.authority, startUri.path, Some(nextQuery.toString()))
 
     log.info("fetch http with url {}", nextUri)
 
