@@ -25,7 +25,7 @@ object Stage {
   }
 
   def applyMergeStage(mergeSettings: MergeSettings)(implicit log:Logger):MergeStage =
-    new MergeStage(UUID(), mergeSettings.keyMap.asJava, mergeSettings.entitySink)
+    new MergeStage(UUID(), mergeSettings.keyMap.asJava, mergeSettings.entitySink(log:Logger))
 
 
 }

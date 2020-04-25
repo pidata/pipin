@@ -1,13 +1,14 @@
 package io.pipin.core.ext
 
 import akka.Done
+import org.slf4j.Logger
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 /**
   * Created by libin on 2020/1/5.
   */
-class EntitySink {
+class EntitySink(log:Logger) {
   def update(entity: Entity):String = {
     ""
   }
