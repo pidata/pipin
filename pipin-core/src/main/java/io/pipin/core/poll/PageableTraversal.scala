@@ -59,7 +59,7 @@ trait PageableTraversal  extends Traversal{
 
     http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody(extraParams)).withHeaders(headers)).flatMap {
       res =>
-        if(res.status.isSuccess())
+        if(res.status.intValue() == 200)
           res.entity.dataBytes.map(_.utf8String).runReduce(_ + _)
         else{
           log.error("http error: {} method: {}", res.status.intValue(), getMethod)
@@ -119,7 +119,7 @@ trait PageableTraversal  extends Traversal{
 
   def endPage(doc:Document): Boolean
 
-  def getContent(doc:Document): Iterator[Document]
+  def getContent(doc:Document): Seq[Document]
 
   def getTokenAuthorizator:TokenAuthorizator
 

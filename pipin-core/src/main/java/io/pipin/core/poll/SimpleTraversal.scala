@@ -34,8 +34,8 @@ class SimpleTraversal(val uri:String,
     pageNumber >= totalPages
   }
 
-  override def getContent(doc: Document): Iterator[Document] = {
-    doc.get(getContentField, classOf[java.util.List[Document]]).asScala.toIterator
+  override def getContent(doc: Document): Seq[Document] = {
+    doc.get(getContentField, classOf[java.util.List[Document]]).asScala
   }
 
   /** *
