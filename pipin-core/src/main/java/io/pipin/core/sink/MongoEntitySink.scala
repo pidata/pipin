@@ -25,6 +25,7 @@ class MongoEntitySink(log:Logger) extends EntitySink(log:Logger){
     val key = entity.key
     val doc = new Document(entity.value)
     doc.put("key", key)
+    doc.remove("_id")
     collection.findOneAndUpdate(json("key"->key),
       json("$set"->doc),
       new FindOneAndUpdateOptions().upsert(true)).subscribe(new Subscriber[Document] {
