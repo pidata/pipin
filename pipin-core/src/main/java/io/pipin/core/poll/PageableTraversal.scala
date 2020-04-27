@@ -1,5 +1,7 @@
 package io.pipin.core.poll
 
+import java.util
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
@@ -12,7 +14,6 @@ import org.bson.Document
 
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
-
 import scala.collection.JavaConverters._
 
 /**
@@ -29,12 +30,13 @@ trait PageableTraversal  extends Traversal{
   val http: HttpExt = Http()
   implicit val log: Logger
 
+  val extraParamsIterator: Iterator[util.Map[String, String]] = extraParamsBatch.toIterator
+
   override def start(queue:Any)(implicit executor: ExecutionContext, materializer:Materializer):Unit = {
     queue match {
       case q:SourceQueueWithComplete[Document] =>
-        extraParamsBatch.foreach{
-          extraParams =>
-            request(pageStartFrom, extraParams, q)
+        if( extraParamsIterator.hasNext) {
+          request(pageStartFrom, extraParamsIterator.next(), q)
         }
     }
 
@@ -79,7 +81,11 @@ trait PageableTraversal  extends Traversal{
           onPageNext(doc, extraParams)
           request(page + 1, extraParams, queueWithComplete)
         }else{
-          queueWithComplete.complete()
+          if( extraParamsIterator.hasNext){
+            request(pageStartFrom, extraParamsIterator.next(), queueWithComplete)
+          } else {
+            queueWithComplete.complete()
+          }
         }
     }.recover{
       case e:Throwable =>
