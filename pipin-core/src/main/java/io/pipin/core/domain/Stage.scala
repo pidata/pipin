@@ -63,6 +63,11 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
 
   def absorb(doc:Document)(implicit executor: ExecutionContext): Future[Seq[Document]] = {
 
+    if(doc.containsKey("_id")){
+      doc.put("id", doc.get("_id"))
+      doc.remove("_id")
+    }
+
     val key = hash(doc)
 
     log.info("try to find and update doc with key {}", key)
