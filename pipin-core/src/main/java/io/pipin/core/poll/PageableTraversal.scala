@@ -73,9 +73,6 @@ trait PageableTraversal  extends Traversal{
       case e:Throwable =>
         log.error("http resource error", e)
         "{}"
-    }.map{c=>
-      log.info(c)
-      c
     }.map(Document.parse).map {
       doc =>
         val content = getContent(doc)
@@ -91,6 +88,10 @@ trait PageableTraversal  extends Traversal{
             queueWithComplete.complete()
           }
         }
+    }.recover{
+      case e:Throwable =>
+        log.error("http resource error", e)
+        queueWithComplete.complete()
     }
 
   }
