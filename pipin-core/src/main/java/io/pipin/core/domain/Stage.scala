@@ -104,7 +104,7 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
             right.recover{
               case e:Exception =>
                 failed(e)
-                throw new StageException("",e)
+                throw new StageException("stage failed",e)
             }.map{
               last =>
                 ok(id)
