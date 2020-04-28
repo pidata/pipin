@@ -90,7 +90,11 @@ trait PageableTraversal  extends Traversal{
     }.recover{
       case e:Throwable =>
         log.error("http resource error", e)
-        queueWithComplete.complete()
+        if( extraParamsIterator.hasNext){
+          request(pageStartFrom, extraParamsIterator.next(), queueWithComplete)
+        } else {
+          queueWithComplete.complete()
+        }
     }
 
   }
