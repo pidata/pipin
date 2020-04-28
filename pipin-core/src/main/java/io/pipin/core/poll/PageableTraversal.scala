@@ -69,6 +69,11 @@ trait PageableTraversal  extends Traversal{
           headers.foreach(h=>log.error(h.toString()))
           throw new JobException(s"http error: ${res.status.defaultMessage()}")
         }
+    }.recover{
+      case e:Throwable =>
+        log.error("http resource error", e)
+        queueWithComplete.complete()
+        "{}"
     }.map{c=>
       log.info(c)
       c
@@ -86,14 +91,6 @@ trait PageableTraversal  extends Traversal{
           } else {
             queueWithComplete.complete()
           }
-        }
-    }.recover{
-      case e:Throwable =>
-        log.error("http resource error", e)
-        if( extraParamsIterator.hasNext){
-          request(pageStartFrom, extraParamsIterator.next(), queueWithComplete)
-        } else {
-          queueWithComplete.complete()
         }
     }
 
