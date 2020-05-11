@@ -56,7 +56,7 @@ class Job(val id:String,
 
 
 
-  def retry()(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
+  private def retry()(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
     convertStage.process(absorbStage.fetchDocs).flatMap{
       converted =>
         mergeStage.process(converted)

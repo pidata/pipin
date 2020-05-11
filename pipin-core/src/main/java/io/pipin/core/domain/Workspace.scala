@@ -4,6 +4,8 @@ import java.nio.charset.Charset
 import ch.qos.logback.classic.{LoggerContext, PatternLayout}
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.rolling.{RollingFileAppender, SizeBasedTriggeringPolicy, TimeBasedRollingPolicy}
+import ch.qos.logback.core.util.FileSize
 import ch.qos.logback.core.{Appender, FileAppender}
 import org.slf4j.LoggerFactory
 
@@ -24,10 +26,17 @@ class Workspace (id:String){
     patternLayoutEncoder.setCharset(Charset.forName("UTF-8"))
     patternLayoutEncoder.start()
 
-    val fileAppender = new FileAppender[ILoggingEvent]
+    val fileAppender = new RollingFileAppender[ILoggingEvent]
+    val rollingPolicy = new TimeBasedRollingPolicy[ILoggingEvent]
+    rollingPolicy.setFileNamePattern("app.%d{yyyy-MM-dd}.log.zip")
+    rollingPolicy.setMaxHistory(30)
+    val triggeringPolicy = new SizeBasedTriggeringPolicy[ILoggingEvent]
+    triggeringPolicy.setMaxFileSize(FileSize.valueOf("5MB"))
     fileAppender.setFile(logFile)
     fileAppender.setName(s"workspace-$id")
     fileAppender.setContext(context)
+    fileAppender.setRollingPolicy(rollingPolicy)
+    fileAppender.setTriggeringPolicy(triggeringPolicy)
 
     fileAppender.setEncoder(patternLayoutEncoder)
     fileAppender.setImmediateFlush(true)

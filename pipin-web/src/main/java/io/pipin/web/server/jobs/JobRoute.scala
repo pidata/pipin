@@ -8,8 +8,7 @@ import io.pipin.core.repository.{Job, Project}
 import org.bson.Document
 
 import scala.concurrent.ExecutionContext
-import scala.util.Success
-
+import scala.util.{Failure, Success}
 import scala.collection.JavaConverters._
 
 /**
@@ -24,7 +23,7 @@ object JobRoute {
             onComplete(Job.findAll(page)){
               case Success(seq: Seq[Document]) =>
                 val doc = new Document()
-                doc.put("results", seq.toList.asJava)
+                doc.put("content", seq.toList.asJava)
                 complete(doc.toJson())
             }
         }
@@ -40,7 +39,23 @@ object JobRoute {
               case Success(None) =>
                 complete(404,"")
             }
+          }
+        } ~
+        path("start"){
+          get{
+            onComplete(Job.findById(jobId).flatMap(x=>Job.applyFromDoc(x.get))){
+              case Success(Some(job)) =>
+                extractActorSystem{
+                  implicit actorSystem =>
+                    val project = job.project
+                    val traversal = project.traversal
+                    job.process(traversal.stream(), traversal.start)
+                    complete(job.toDocument.toJson())
+                }
+              case Failure(e) =>
 
+                complete(404,e.getMessage)
+            }
           }
         }
     }

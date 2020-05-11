@@ -20,13 +20,7 @@ class PollWorker(project: Project) {
       implicit val actorSystem = PipinSystem.actorSystem
       implicit val materialize: Materializer = ActorMaterializer()
       implicit val executionContext = actorSystem.dispatchers.lookup("poll-dispatcher")
-      val pollSettings: PollSettings = project.pollSettings
-
-      val classMirror = ru.runtimeMirror(getClass.getClassLoader)
-      val classTest = classMirror.staticClass(pollSettings.traversalClass)
-      val cls1 = classMirror.reflectClass(classTest)
-      val constructor = cls1.reflectConstructor(classTest.primaryConstructor.asMethod)
-      val traversal = constructor.apply(pollSettings.startUri, pollSettings.pageParameter, pollSettings.pageStartFrom, pollSettings, actorSystem, log).asInstanceOf[Traversal]
+      val traversal = project.traversal
 
 
       Job(UUID(), project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)

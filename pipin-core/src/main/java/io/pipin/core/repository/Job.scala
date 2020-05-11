@@ -4,7 +4,7 @@ import ch.qos.logback.classic.Logger
 import com.mongodb.client.model.UpdateOptions
 import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.{MongoCollection, MongoDatabase}
-import io.pipin.core.domain.{Job, Project, Workspace}
+import io.pipin.core.domain.{AbsorbStage, ConvertStage, Job, MergeStage, Project, Workspace}
 import io.pipin.core.settings.{ConvertSettings, MergeSettings}
 import io.pipin.core.Converters._
 import io.pipin.core.repository.Project.{applyFromDoc, collection}
@@ -56,8 +56,26 @@ object Job {
   }
 
 
-    private def applyFromDoc(doc:Document): Job = {
-      Job("", new Project("","",""))
+  private def applyFromDoc(doc:Document, project: Project): Job = {
+    val id = doc.getString("_id")
+    val workspace = project.workspace
+    val absorbStage = Stage.applyFromDoc(doc.get("absorbStage").asInstanceOf[Document], project)(workspace.getLogger).asInstanceOf[AbsorbStage]
+    val convertStage = Stage.applyFromDoc(doc.get("convertStage").asInstanceOf[Document], project)(workspace.getLogger).asInstanceOf[ConvertStage]
+    val mergeStage = Stage.applyFromDoc(doc.get("mergeStage").asInstanceOf[Document], project)(workspace.getLogger).asInstanceOf[MergeStage]
+    val job = new Job(id, project, project.workspace, absorbStage, convertStage, mergeStage)
+    job.status = doc.getInteger("status")
+    job
+  }
+
+  def applyFromDoc(doc:Document)(implicit executionContext: ExecutionContext): Future[Option[Job]] = {
+
+    val projectId = doc.get("project").asInstanceOf[Document].getString("_id")
+    Project.findById(projectId).map{
+      case Some(project)=>
+        Some(applyFromDoc(doc, project))
+      case None =>
+        None
     }
+  }
 
 }

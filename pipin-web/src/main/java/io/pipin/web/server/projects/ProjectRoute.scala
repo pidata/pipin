@@ -1,5 +1,7 @@
 package io.pipin.web.server.projects
 
+import akka.http.scaladsl.coding.Gzip
+import akka.http.scaladsl.model.{ContentTypes, headers}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
@@ -53,9 +55,16 @@ object ProjectRoute {
                   onComplete(Job.findByProject(projectId, page)){
                     case Success(seq) =>
                       val doc = new Document()
-                      doc.put("results",  seq.toList.asJava)
+                      doc.put("content",  seq.toList.asJava)
                       complete(doc.toJson())
                   }
+              }
+            }
+          } ~
+          pathPrefix("logs"){
+            respondWithHeaders(headers.`Content-Type`(ContentTypes.`text/html(UTF-8)`)){
+              encodeResponseWith(Gzip) {
+                getFromBrowseableDirectories(s"workspaces/$projectId/logs")
               }
             }
           }
@@ -67,7 +76,7 @@ object ProjectRoute {
             onComplete(Project.findAll(page)){
               case Success(seq) =>
                 val doc = new Document()
-                doc.put("results",  seq.map(Project.toDocument).toList.asJava)
+                doc.put("content",  seq.map(Project.toDocument).toList.asJava)
                 complete(doc.toJson())
             }
         }
