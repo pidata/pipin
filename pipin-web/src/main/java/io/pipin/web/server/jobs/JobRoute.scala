@@ -6,6 +6,7 @@ import akka.stream.Materializer
 import io.pipin.core.domain.Job
 import io.pipin.core.repository.{Job, Project}
 import org.bson.Document
+import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -48,6 +49,7 @@ object JobRoute {
                 extractActorSystem{
                   implicit actorSystem =>
                     val project = job.project
+                    //implicit val log: Logger = project.workspace.getLogger("Poll")
                     val traversal = project.traversal
                     job.process(traversal.stream(), traversal.start)
                     complete(job.toDocument.toJson())

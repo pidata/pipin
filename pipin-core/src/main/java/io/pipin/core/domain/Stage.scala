@@ -95,7 +95,7 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
           doc =>
             absorb(doc).map{
               m =>
-                log.info("absorb doc {}", doc)
+                //log.info("absorb doc {}", doc)
                 ""
             }
         }.toMat(Sink.last)(Keep.both).run() match {
