@@ -21,7 +21,8 @@ class Job(val id:String,
   var errorMessages = ""
 
   val log: Logger = workspace.getLogger(s"Job")
-  def process(source:Source[Document, Any], queueReady:(Any)=>Unit = (_)=>{})(implicit executor: ExecutionContext, materializer:Materializer): Unit ={
+  def process(source:Source[Document, Any], queueReady:(Any)=>Unit = (_)=>{})(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
+    log.info("try to process job {}", id)
     status match {
       case 1 =>
         retry()
@@ -47,6 +48,7 @@ class Job(val id:String,
         } recover {
           case e:Exception =>
             status = 1
+            duration =  ((System.currentTimeMillis() - startTime)/1000).toInt
             errorMessages = e.getMessage
             Job.save(this)
         }
@@ -57,6 +59,7 @@ class Job(val id:String,
 
 
   private def retry()(implicit executor: ExecutionContext, materializer:Materializer): Unit = {
+    startTime = System.currentTimeMillis()
     convertStage.process(absorbStage.fetchDocs).flatMap{
       converted =>
         mergeStage.process(converted)
@@ -64,16 +67,21 @@ class Job(val id:String,
       case Done =>
         status = 3
         duration =  ((System.currentTimeMillis() - startTime)/1000).toInt
+        Job.save(this)
         Done
     } recover {
       case e:Exception =>
         status = 1
+        duration =  ((System.currentTimeMillis() - startTime)/1000).toInt
         errorMessages = e.getMessage
+        Job.save(this)
     }
   }
 
   def toDocument: Document = {
-    new Document(Map("id"->id, "startTime"->startTime, "duration"->duration, "status"->status, "project"->json("_id"->project._id),
+    new Document(Map("id"->id, "startTime"->startTime, "duration"->duration, "status"->status,
+      "errorMessages" -> errorMessages,
+      "project"->json("_id"->project._id),
       "absorbStage"->absorbStage.toDocument, "convertStage"->convertStage.toDocument, "mergeStage"->mergeStage.toDocument
     ))
   }

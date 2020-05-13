@@ -63,6 +63,7 @@ object Job {
     val convertStage = Stage.applyFromDoc(doc.get("convertStage").asInstanceOf[Document], project)(workspace.getLogger).asInstanceOf[ConvertStage]
     val mergeStage = Stage.applyFromDoc(doc.get("mergeStage").asInstanceOf[Document], project)(workspace.getLogger).asInstanceOf[MergeStage]
     val job = new Job(id, project, project.workspace, absorbStage, convertStage, mergeStage)
+    job.startTime = doc.getLong("startTime")
     job.status = doc.getInteger("status")
     job
   }
