@@ -5,19 +5,21 @@ import akka.http.scaladsl.model.{ContentTypes, headers}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+
 import io.pipin.core.poll.PollWorker
 import io.pipin.core.repository.{Job, Project}
 import io.pipin.core.util.UUID
+import io.pipin.web.server.RestJsonSupport
 import org.bson.Document
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import scala.collection.JavaConverters._
 
 /**
   * Created by libin on 2020/1/15.
   */
-object ProjectRoute {
+object ProjectRoute extends RestJsonSupport{
   def router()(implicit executor: ExecutionContext, materializer:Materializer): Route = {
     pathPrefix( Segment) {
       projectId =>
@@ -82,22 +84,44 @@ object ProjectRoute {
         }
       } ~
       post{
-        entity(as[String]){
-          body =>
-            val doc = Document.parse(body)
-            val project = if(doc.containsKey("_id")){
-              Project( Document.parse(body))
-            }else{
-              Project(UUID(), Document.parse(body))
-            }
-            onComplete(Project.save(project)){
-              case Success(Some(doc)) =>
-                complete(doc.toJson)
-              case Success(None) =>
-                complete(doc.toJson)
+        entity(as[ProjectDTO]){
+          dto =>
+
+            Option(dto._id) match {
+              case Some(id) =>
+                onComplete(Project.findById(id).flatMap{
+                  case Some(project) =>
+                    fillProject(project, dto)
+                    Project.save(project).map(_=>Some(project))
+                  case None =>
+                    Future(None)
+                }){
+                  case Success(Some(project)) =>
+                    complete(project)
+                  case Success(None) =>
+                    complete(404, "")
+                  case _ =>
+                    complete(500, "")
+                }
+              case None =>
+                val project = new io.pipin.core.domain.Project(UUID(),dto.name)
+                fillProject(project, dto)
+                onComplete(Project.save(project)){
+                  case Success(_) =>
+                    complete(project)
+                  case _ =>
+                    complete(500, "")
+                }
             }
         }
       }
     }
+  }
+
+  def fillProject(project: io.pipin.core.domain.Project, projectDTO: ProjectDTO): Unit ={
+    project.name = projectDTO.name
+    project.pollSettings = projectDTO.pollSettings
+    project.convertSettings = projectDTO.convertSettings
+    project.mergeSettings = projectDTO.mergeSettings
   }
 }

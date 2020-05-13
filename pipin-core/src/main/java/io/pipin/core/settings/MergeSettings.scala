@@ -10,7 +10,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Created by libin on 2020/1/9.
   */
-case class MergeSettings (keyMap:Map[String, Array[String]], sinkClass:String){
+case class MergeSettings (keyMap:Map[String, Array[String]], sinkClass:String = "io.pipin.core.sink.MongoEntitySink"){
   def entitySink(log:Logger):EntitySink = {
     val classMirror = ru.runtimeMirror(getClass.getClassLoader)
     val classTest = classMirror.staticClass(sinkClass)

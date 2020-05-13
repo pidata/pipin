@@ -12,7 +12,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Created by libin on 2020/1/3.
   */
-class Project(val _id:String, var name:String, var source:String = "poll", keys:Array[String] = Array() ) {
+class Project(val _id:String, var name:String, var source:String = "poll", keys:Array[String] = Array() ) extends Dto{
   private val entity = name.replace(" ","_")
   var convertSettings:ConvertSettings = ConvertSettings(entity)
   var mergeSettings:MergeSettings = MergeSettings(Map(entity -> keys), "io.pipin.core.sink.MongoEntitySink")
