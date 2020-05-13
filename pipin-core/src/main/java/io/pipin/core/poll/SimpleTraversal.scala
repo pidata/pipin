@@ -37,7 +37,9 @@ class SimpleTraversal(val uri:String,
   override def getContent(doc: Document): Seq[Document] = {
     if(doc.containsKey(getContentField)){
       doc.get(getContentField, classOf[java.util.List[Document]]).asScala
-    }else{
+    }else if("__entity__".equalsIgnoreCase(getContentField)){
+      Seq(doc)
+    } else{
       Seq.empty
     }
   }
