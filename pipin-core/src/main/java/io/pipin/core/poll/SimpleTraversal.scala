@@ -49,7 +49,7 @@ class SimpleTraversal(val uri:String,
     *
     * @return
     */
-  def getContentField = "content"
+  def getContentField = pollSettings.contentField
 
   override def getMethod: HttpMethod = {
     if("GET".equalsIgnoreCase(pollSettings.method)){

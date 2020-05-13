@@ -13,7 +13,7 @@ case class PollSettings(startUri:String,
                         pageParameter:String = "page",
                         pageStartFrom:Int = 0,
                         method:String = "GET",
-                        importer:String = "",
+                        contentField:String = "content",
                         traversalClass:String = "io.pipin.core.poll.SimpleTraversal",
                         extraParams:mutable.Map[String,String] = mutable.Map()
 ){
