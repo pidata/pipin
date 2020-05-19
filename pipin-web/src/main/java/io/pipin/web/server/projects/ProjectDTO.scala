@@ -1,6 +1,6 @@
 package io.pipin.web.server.projects
 
-import io.pipin.core.domain.Dto
+import io.pipin.core.domain.{Dto, JobTrigger}
 import io.pipin.core.settings.{ConvertSettings, MergeSettings, PollSettings}
 
 /**
@@ -10,4 +10,4 @@ import io.pipin.core.settings.{ConvertSettings, MergeSettings, PollSettings}
 /*
 *
 */
-case class ProjectDTO ( _id:String = null,  name:String, pollSettings: PollSettings, convertSettings:ConvertSettings, mergeSettings:MergeSettings) extends Dto
+case class ProjectDTO ( _id:String = null,  name:String, pollSettings: PollSettings, convertSettings:ConvertSettings, mergeSettings:MergeSettings, jobTrigger: JobTrigger = null) extends Dto

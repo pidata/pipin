@@ -15,10 +15,10 @@ import scala.reflect.runtime.{universe => ru}
 class Project(val _id:String, var name:String, var source:String = "poll", keys:Array[String] = Array() ) extends Dto{
   private val entity = name.replace(" ","_")
   var convertSettings:ConvertSettings = ConvertSettings(entity)
-  var mergeSettings:MergeSettings = MergeSettings(Map(entity -> keys), "io.pipin.core.sink.MongoEntitySink")
+  var mergeSettings:MergeSettings = MergeSettings(Map(entity -> keys))
   var pollSettings: PollSettings = PollSettings("", "", 0, "")
   val workspace = Workspace(id = _id)
-  var jobTrigger:JobTrigger = _
+  var jobTrigger:JobTrigger = JobTrigger("", enable = false)
 
   def traversal(implicit actorSystem:ActorSystem, log:Logger = workspace.getLogger("Poll")): Traversal = {
     val classMirror = ru.runtimeMirror(getClass.getClassLoader)

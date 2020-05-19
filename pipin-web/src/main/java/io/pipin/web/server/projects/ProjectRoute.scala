@@ -21,26 +21,14 @@ import scala.collection.JavaConverters._
   */
 object ProjectRoute extends RestJsonSupport{
   def router()(implicit executor: ExecutionContext, materializer:Materializer): Route = {
-    pathPrefix( Segment) {
-      projectId =>
-        pathEnd {
-          get {
-            onComplete(Project.findById(projectId)) {
-              case Success(Some(project)) =>
-                complete(Project.toDocument(project).toJson())
-              case Success(None) =>
-                complete(404,"")
-              case Failure(e) =>
-                complete(400, e.getMessage)
-            }
-          }
-        } ~
-          pathPrefix("start") {
+    extractLog{
+      log =>
+        pathPrefix( Segment) {
+          projectId =>
             pathEnd {
               get {
                 onComplete(Project.findById(projectId)) {
                   case Success(Some(project)) =>
-                    new PollWorker(project).execute()
                     complete(Project.toDocument(project).toJson())
                   case Success(None) =>
                     complete(404,"")
@@ -48,74 +36,92 @@ object ProjectRoute extends RestJsonSupport{
                     complete(400, e.getMessage)
                 }
               }
-            }
-          } ~
-          path("jobs"){
+            } ~
+              pathPrefix("start") {
+                pathEnd {
+                  get {
+                    onComplete(Project.findById(projectId)) {
+                      case Success(Some(project)) =>
+                        new PollWorker(project).execute()
+                        complete(Project.toDocument(project).toJson())
+                      case Success(None) =>
+                        complete(404,"")
+                      case Failure(e) =>
+                        complete(400, e.getMessage)
+                    }
+                  }
+                }
+              } ~
+              path("jobs"){
+                get{
+                  parameters('page ? 0){
+                    page =>
+                      onComplete(Job.findByProject(projectId, page)){
+                        case Success(seq) =>
+                          val doc = new Document()
+                          doc.put("content",  seq.toList.asJava)
+                          complete(doc.toJson())
+                      }
+                  }
+                }
+              } ~
+              pathPrefix("logs"){
+                respondWithHeaders(headers.`Content-Type`(ContentTypes.`text/html(UTF-8)`)){
+                  encodeResponseWith(Gzip) {
+                    getFromBrowseableDirectories(s"workspaces/$projectId/logs")
+                  }
+                }
+              }
+        } ~
+          pathEnd {
             get{
               parameters('page ? 0){
                 page =>
-                  onComplete(Job.findByProject(projectId, page)){
+                  onComplete(Project.findAll(page)){
                     case Success(seq) =>
                       val doc = new Document()
-                      doc.put("content",  seq.toList.asJava)
+                      doc.put("content",  seq.map(Project.toDocument).toList.asJava)
                       complete(doc.toJson())
                   }
               }
-            }
-          } ~
-          pathPrefix("logs"){
-            respondWithHeaders(headers.`Content-Type`(ContentTypes.`text/html(UTF-8)`)){
-              encodeResponseWith(Gzip) {
-                getFromBrowseableDirectories(s"workspaces/$projectId/logs")
-              }
-            }
-          }
-    } ~
-    pathEnd {
-      get{
-        parameters('page ? 0){
-          page =>
-            onComplete(Project.findAll(page)){
-              case Success(seq) =>
-                val doc = new Document()
-                doc.put("content",  seq.map(Project.toDocument).toList.asJava)
-                complete(doc.toJson())
-            }
-        }
-      } ~
-      post{
-        entity(as[ProjectDTO]){
-          dto =>
+            } ~
+              post{
+                entity(as[ProjectDTO]){
+                  dto =>
 
-            Option(dto._id) match {
-              case Some(id) =>
-                onComplete(Project.findById(id).flatMap{
-                  case Some(project) =>
-                    fillProject(project, dto)
-                    Project.save(project).map(_=>Some(project))
-                  case None =>
-                    Future(None)
-                }){
-                  case Success(Some(project)) =>
-                    complete(project)
-                  case Success(None) =>
-                    complete(404, "")
-                  case _ =>
-                    complete(500, "")
+                    Option(dto._id) match {
+                      case Some(id) =>
+                        onComplete(Project.findById(id).flatMap{
+                          case Some(project) =>
+                            fillProject(project, dto)
+                            Project.save(project).map(_=>Some(project))
+                          case None =>
+                            Future(None)
+                        }){
+                          case Success(Some(project)) =>
+                            complete(project)
+                          case Success(None) =>
+                            complete(404, "")
+                          case Failure(e) =>
+                            log.error(e, "project save failed")
+                            complete(500, "")
+                        }
+                      case None =>
+                        val project = new io.pipin.core.domain.Project(UUID(),dto.name)
+                        fillProject(project, dto)
+                        onComplete(Project.save(project)){
+                          case Success(_) =>
+                            complete(project)
+                          case Failure(e) =>
+                            log.error(e, "project save failed")
+                            complete(500, "")
+                        }
+                    }
                 }
-              case None =>
-                val project = new io.pipin.core.domain.Project(UUID(),dto.name)
-                fillProject(project, dto)
-                onComplete(Project.save(project)){
-                  case Success(_) =>
-                    complete(project)
-                  case _ =>
-                    complete(500, "")
-                }
-            }
-        }
-      }
+              }
+          }
     }
+
   }
 
   def fillProject(project: io.pipin.core.domain.Project, projectDTO: ProjectDTO): Unit ={
@@ -123,5 +129,6 @@ object ProjectRoute extends RestJsonSupport{
     project.pollSettings = projectDTO.pollSettings
     project.convertSettings = projectDTO.convertSettings
     project.mergeSettings = projectDTO.mergeSettings
+    project.jobTrigger = projectDTO.jobTrigger
   }
 }

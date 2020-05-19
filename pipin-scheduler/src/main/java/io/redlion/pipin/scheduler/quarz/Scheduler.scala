@@ -20,13 +20,13 @@ class Scheduler {
 
   private val logger = LoggerFactory.getLogger("Scheduler")
   val scheduler = StdSchedulerFactory.getDefaultScheduler
-  def scheduleJob(project: Project): Boolean ={
+  def scheduleJob(project: Project): Boolean = {
     logger.info(s"schedule job for ${project._id} with trigger ${project.jobTrigger}")
-    scheduler.scheduleJob(JobDetail(Job(UUID(), project)), Trigger(project.jobTrigger))
+    scheduler.scheduleJob(JobDetail(Job(UUID(), project)), Trigger(project.jobTrigger, project._id))
     true
   }
 
-  def scheduleAll(): Future[Seq[Boolean]] ={
+  def scheduleAll(): Future[Seq[Boolean]] = {
     implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
     repository.Project.findAllWithCron().map(projects =>
       projects.map(scheduleJob)).recover{

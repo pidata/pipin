@@ -103,7 +103,7 @@ object Project {
   }
 
   def findAllWithCron()(implicit executor: ExecutionContext): Future[Seq[Project]] = {
-    collection.find(json("jobTrigger"->json("$ne"->null))).asFuture.map {
+    collection.find(json("jobTrigger"->json("$ne"->null), "jobTrigger.enable"->true)).asFuture.map {
       seq =>
         seq.map(applyFromDoc)
     }

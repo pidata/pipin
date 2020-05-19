@@ -16,7 +16,7 @@
 
 7. 提供Restful接口方便集成。
 
-8. TODO: 提供操作界面。
+8. 提供操作界面。
 
 
 ## 环境依赖：
@@ -29,8 +29,14 @@
 
 
 
+
 [开发文档 https://github.com/pidata/pipin/wiki](https://github.com/pidata/pipin/wiki)
 
 [Restful接口文档 https://reference-pidata.doc.coding.io](https://reference-pidata.doc.coding.io)
 
 [实例项目 https://github.com/pidata/pipin-examples](https://github.com/pidata/pipin-examples)
+
+
+![缩略图](http://mi.lepiepie.com/images/upload/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202020-05-20%20%E4%B8%8A%E5%8D%885.26.45.png)
+
+[更多缩略图](https://github.com/pidata/pipin/wiki/Snapshots)

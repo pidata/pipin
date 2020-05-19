@@ -11,8 +11,8 @@ import org.quartz._
 
 object Trigger{
 
-  def apply(jobTrigger: JobTrigger): Trigger = {
-    val (key, expression, priority) = (jobTrigger.key, jobTrigger.cron, jobTrigger.priority)
+  def apply(jobTrigger: JobTrigger, key:String): Trigger = {
+    val (expression, priority) = (jobTrigger.cron, jobTrigger.priority)
 
     val cronScheduleBuilder = CronScheduleBuilder.cronSchedule(expression)
     TriggerBuilder.newTrigger

@@ -40,6 +40,7 @@ class SimpleTraversal(val uri:String,
     }else if("__entity__".equalsIgnoreCase(getContentField)){
       Seq(doc)
     } else{
+      log.warn(s"entity not found in field ${getContentField} for doc ${doc}")
       Seq.empty
     }
   }
