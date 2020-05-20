@@ -59,10 +59,11 @@ trait PageableTraversal  extends Traversal{
 
     val headers = getHeaders
 
-    http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody(extraParams)).withHeaders(headers)).flatMap {
+    http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody(extraParams))
+      .withHeaders(headers)).flatMap {
       res =>
         if(res.status.intValue() == 200)
-          res.entity.dataBytes.map(_.utf8String).runReduce(_ + _)
+          res.entity.withoutSizeLimit().dataBytes.map(_.utf8String).runReduce(_ + _)
         else{
           log.error("http error: {} method: {}", res.status.intValue(), getMethod)
           res.entity.dataBytes.map(_.utf8String).runReduce(_ + _).foreach(log.error)
