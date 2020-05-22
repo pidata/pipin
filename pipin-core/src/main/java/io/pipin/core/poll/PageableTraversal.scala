@@ -62,6 +62,7 @@ trait PageableTraversal  extends Traversal{
     http.singleRequest(HttpRequest(getMethod, nextUri).withEntity(ContentTypes.`application/json`, getEntityBody(extraParams))
       .withHeaders(headers)).flatMap {
       res =>
+        log.debug("got response of {} with {}", nextUri, res.status.intValue())
         if(res.status.intValue() == 200)
           res.entity.withoutSizeLimit().dataBytes.map(_.utf8String).runReduce(_ + _)
         else{
@@ -76,8 +77,9 @@ trait PageableTraversal  extends Traversal{
         "{}"
     }.map(Document.parse).map {
       doc =>
+        log.debug("document parsed {}",doc.toString)
         val content = getContent(doc)
-        log.info("get response with {}", content.size)
+        log.debug("get response with {} results", content.size)
         content.foreach(queueWithComplete.offer)
         if (! endPage(doc)) {
           onPageNext(doc, extraParams)

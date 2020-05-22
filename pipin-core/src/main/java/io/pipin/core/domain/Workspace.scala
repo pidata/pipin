@@ -1,12 +1,13 @@
 package io.pipin.core.domain
 import java.nio.charset.Charset
 
-import ch.qos.logback.classic.{LoggerContext, PatternLayout}
+import ch.qos.logback.classic.{Level, LoggerContext, PatternLayout}
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.rolling.{RollingFileAppender, SizeBasedTriggeringPolicy, TimeBasedRollingPolicy}
 import ch.qos.logback.core.util.FileSize
 import ch.qos.logback.core.{Appender, FileAppender}
+import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 /**
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory
 class Workspace (id:String){
   val workDir = s"workspaces/$id"
   val logFile:String = s"$workDir/logs/app.log"
+
+  val config = ConfigFactory.load()
 
   val logAppender: Appender[ILoggingEvent] = {
 
@@ -50,6 +53,7 @@ class Workspace (id:String){
   def getLogger(className:String): org.slf4j.Logger ={
     val logger = logAppender.getContext.asInstanceOf[LoggerContext].getLogger(className)
     logger.addAppender(logAppender)
+    logger.setLevel(Level.valueOf(config.getString("log.level")))
     logger
   }
 
