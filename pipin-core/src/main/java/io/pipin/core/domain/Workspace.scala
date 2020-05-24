@@ -31,11 +31,11 @@ class Workspace (id:String){
 
     val fileAppender = new RollingFileAppender[ILoggingEvent]
     val rollingPolicy = new TimeBasedRollingPolicy[ILoggingEvent]
-    rollingPolicy.setFileNamePattern(s"$workDir/logs/app.%d{yyyy-MM-dd}.log.zip")
+    rollingPolicy.setFileNamePattern(s"app.%d{yyyy-MM-dd}.log.zip")
     rollingPolicy.setMaxHistory(30)
     rollingPolicy.setParent(fileAppender)
     val triggeringPolicy = new SizeBasedTriggeringPolicy[ILoggingEvent]
-    triggeringPolicy.setMaxFileSize(FileSize.valueOf("5MB"))
+    triggeringPolicy.setMaxFileSize(FileSize.valueOf("50MB"))
     triggeringPolicy.start()
     fileAppender.setFile(logFile)
     fileAppender.setName(s"workspace-$id")

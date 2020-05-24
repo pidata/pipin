@@ -217,7 +217,7 @@ class MergeStage(override val id:String, keyMap:util.Map[String, Array[String]],
           entitySink.asyncUpdate(entity,promise)
           promise.future
         }))
-    }.runWith(Sink.foreach(x=>log.info("processed {} entities ", x.size))).recover{
+    }.runWith(Sink.foreach(x=>log.debug("processed {} entities ", x.size))).recover{
       case e:Exception =>
         failed(e)
         throw new StageException("",e)
