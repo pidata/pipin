@@ -19,10 +19,12 @@ class Workspace (id:String){
 
   val config = ConfigFactory.load()
 
+  def appenderName = s"workspace-$id"
+
   val logAppender: Appender[ILoggingEvent] = {
 
     val context: LoggerContext = new LoggerContext()
-    context.setName(s"workspace-$id")
+    context.setName(appenderName)
     val patternLayoutEncoder:PatternLayoutEncoder = new PatternLayoutEncoder()
     patternLayoutEncoder.setPattern("%d %-5level # [%thread] %logger{0}: %msg%n")
     patternLayoutEncoder.setContext(context)
@@ -33,9 +35,12 @@ class Workspace (id:String){
     val rollingPolicy = new TimeBasedRollingPolicy[ILoggingEvent]
     rollingPolicy.setFileNamePattern(s"app.%d{yyyy-MM-dd}.log.zip")
     rollingPolicy.setMaxHistory(30)
+    rollingPolicy.setContext(context)
     rollingPolicy.setParent(fileAppender)
+    rollingPolicy.start()
     val triggeringPolicy = new SizeBasedTriggeringPolicy[ILoggingEvent]
     triggeringPolicy.setMaxFileSize(FileSize.valueOf("50MB"))
+    triggeringPolicy.setContext(context)
     triggeringPolicy.start()
     fileAppender.setFile(logFile)
     fileAppender.setName(s"workspace-$id")
@@ -44,7 +49,6 @@ class Workspace (id:String){
     fileAppender.setTriggeringPolicy(triggeringPolicy)
 
     fileAppender.setEncoder(patternLayoutEncoder)
-    fileAppender.setImmediateFlush(true)
     fileAppender.start()
     context.start()
     fileAppender
@@ -52,8 +56,10 @@ class Workspace (id:String){
 
   def getLogger(className:String): org.slf4j.Logger ={
     val logger = logAppender.getContext.asInstanceOf[LoggerContext].getLogger(className)
-    logger.addAppender(logAppender)
-    logger.setLevel(Level.valueOf(config.getString("log.level")))
+    if(null == logger.getAppender(appenderName)){
+      logger.addAppender(logAppender)
+      logger.setLevel(Level.valueOf(config.getString("log.level")))
+    }
     logger
   }
 

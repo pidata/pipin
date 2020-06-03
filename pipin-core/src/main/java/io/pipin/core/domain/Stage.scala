@@ -70,7 +70,7 @@ class AbsorbStage(override val id:String, mongoCollection: MongoCollection[Docum
 
     val key = hash(doc)
 
-    log.info("try to find and update doc with key {}", key)
+    log.debug("try to find and update doc with key {}", key)
 
     doc.asInstanceOf[util.Map[String,Object]] putAll json("key"-> key, "stageInfo" -> json("id" -> id, "updateTime" -> updateTime))
 
@@ -216,8 +216,12 @@ class MergeStage(override val id:String, keyMap:util.Map[String, Array[String]],
           val promise = Promise[String]()
           entitySink.asyncUpdate(entity,promise)
           promise.future
-        }))
-    }.runWith(Sink.foreach(x=>log.debug("processed {} entities ", x.size))).recover{
+        })).recover{
+          case e:Exception =>
+            log.error("entity save failed", e)
+            Seq("Failed")
+        }
+    }.runWith(Sink.last).recover{
       case e:Exception =>
         failed(e)
         throw new StageException("",e)

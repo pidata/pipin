@@ -30,16 +30,23 @@ class MongoEntitySink(log:Logger) extends EntitySink(log:Logger){
       json("$set"->doc),
       new FindOneAndUpdateOptions().upsert(true)).subscribe(new Subscriber[Document] {
       override def onError(throwable: Throwable): Unit = {
-        log.error("mongo update failed, " + doc.toJson, throwable)
         promise.failure(throwable)
+        log.error("mongo update failed, " + key, throwable)
       }
 
       override def onComplete(): Unit = {
-        promise.success("done")
+        if( ! promise.isCompleted){
+          promise.success("done")
+        }
+        log.debug("insert entity " + doc.toJson)
       }
 
       override def onNext(t: Document): Unit = {
-        log.info("updated entity " + t.toJson)
+        if( ! promise.isCompleted){
+          promise.success("done")
+        }
+        log.debug("updated entity " + key)
+
       }
 
       override def onSubscribe(subscription: Subscription): Unit = {
