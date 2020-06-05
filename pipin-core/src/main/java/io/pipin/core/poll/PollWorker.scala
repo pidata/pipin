@@ -9,11 +9,13 @@ import io.pipin.core.settings.PollSettings
 import io.pipin.core.util.UUID
 import org.slf4j.Logger
 
+import scala.concurrent.{Future, Promise}
 import scala.reflect.runtime.{universe => ru}
+import scala.util.Try
 
 class PollWorker(project: Project) {
 
-  def execute(): Unit = {
+  def execute(): Future[String] = {
     implicit val log: Logger = project.workspace.getLogger("Poll")
     try {
       log.info("starting project {}", project._id)
@@ -22,13 +24,13 @@ class PollWorker(project: Project) {
       implicit val executionContext = actorSystem.dispatchers.lookup("poll-dispatcher")
       val traversal = project.traversal
 
-
-      Job(UUID(), project, project.convertSettings, project.mergeSettings).process(traversal.stream(), traversal.start)
+      Job(UUID(), project, project.convertSettings, project.mergeSettings)
+        .process(traversal.stream(), traversal.start)
     }catch {
       case e:Throwable =>
         log.error(s"job execution failed for project ${project._id}", e)
+        throw e
     }
-
   }
 }
 

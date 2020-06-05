@@ -5,7 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import akka.stream.scaladsl.Source
 import akka.stream.{ActorMaterializer, Materializer}
+import akka.util.ByteString
 import io.pipin.core.PipinSystem
 import io.pipin.core.repository.{Job, Project}
 import io.pipin.core.util.UUID
@@ -49,8 +51,7 @@ class PipinServer {
                   case (fileInfo, source) =>
                     onSuccess(Project.findById(projectId)){
                       case Some(project) =>
-
-                        Job(UUID(),project).process(new CSVImporter().stream(source))
+                        Job(UUID(),project).process(new CSVImporter().stream(source.reduce(_++_)))
                         complete("importing started")
                     }
                 } ~ fileUpload("json"){

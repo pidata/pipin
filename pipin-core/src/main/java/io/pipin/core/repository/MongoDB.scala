@@ -11,8 +11,10 @@ object MongoDB {
   val config:Config = ConfigFactory.load()
   val (url) = config.getString("mongo.url")
   val mongoClient:MongoClient =  MongoClients.create(new ConnectionString(url))
+
+  def defaultDatabase: String = config.getString("mongo.database")
   def db: MongoDatabase ={
-    db(config.getString("mongo.database"))
+    db(defaultDatabase)
   }
 
   def db(db:String): MongoDatabase ={

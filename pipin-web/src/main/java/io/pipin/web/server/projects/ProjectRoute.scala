@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.{ContentTypes, headers}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-
+import io.pipin.core.importer.{CSVImporter, JsonImporter}
 import io.pipin.core.poll.PollWorker
 import io.pipin.core.repository.{Job, Project}
 import io.pipin.core.util.UUID
@@ -34,6 +34,28 @@ object ProjectRoute extends RestJsonSupport{
                     complete(404,"")
                   case Failure(e) =>
                     complete(400, e.getMessage)
+                }
+              }
+            } ~
+            pathPrefix("endpoints"){
+              pathEnd{
+                post{
+                  fileUpload("csv"){
+                    case (fileInfo, source) =>
+                      onSuccess(Project.findById(projectId)){
+                        case Some(project) =>
+                          Job(UUID(),project).process(new CSVImporter().stream(source.reduce(_++_)))
+                          complete("importing started")
+                      }
+                  } ~ fileUpload("json"){
+                    case (fileInfo, source) =>
+                      onSuccess(Project.findById(projectId)){
+                        case Some(project) =>
+                          Job(UUID(),project).process(new JsonImporter().stream(source.reduce(_++_)))
+                          complete("importing started")
+                      }
+                  }
+
                 }
               }
             } ~

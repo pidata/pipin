@@ -42,12 +42,12 @@ object Job {
 
   def findAll(page:Int)(implicit executor: ExecutionContext): Future[Seq[Document]] = {
     val offset = page * pageSize
-    dbCollection.find().skip(offset).limit(pageSize).asFuture
+    dbCollection.find().sort(json("startTime" -> -1)).skip(offset).limit(pageSize).asFuture
   }
 
   def findByProject(projectId:String, page:Int)(implicit executor: ExecutionContext): Future[Seq[Document]] = {
     val offset = page * pageSize
-    dbCollection.find(json("project._id"->projectId)).skip(offset).limit(pageSize).asFuture
+    dbCollection.find(json("project._id"->projectId)).sort(json("startTime" -> -1)).skip(offset).limit(pageSize).asFuture
   }
 
 
